@@ -23,18 +23,6 @@ class Game {
         this.started = true;
         this.gameInfo = new CoupGame(this.players);
     }
-
-    // set id(id) {
-    //     this.id = id;
-    // }
-
-    // get id() {
-    //     return this.id;
-    // }
-
-    // get players() {
-    //     return this.players;
-    // }
 }
 
 module.exports = Game;

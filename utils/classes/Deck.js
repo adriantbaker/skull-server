@@ -1,12 +1,13 @@
 const shuffleCards = require("../helpers/shuffle");
 
 class Deck {
-    constructor(cards) {
-        shuffleCards(cards);
-        this.cardsInDeck = cards.map((card, i) => ({
+    constructor(unshuffledCards) {
+        const cards = unshuffledCards.map((card, i) => ({
             ...card,
             id: i
         }));
+        shuffleCards(cards);
+        this.cardsInDeck = cards;
         this.cardsInDiscard = [];
     }
 
@@ -42,9 +43,15 @@ class Deck {
     }
 
     deal(numCards, numPlayers) {
-        const hands = numPlayers.map(player => []);
+        const hands = [];
+        // Draw 1 card per player at a time
         for (let i = 0; i < numCards; i++) {
             for (let j = 0; j < numPlayers; j++) {
+                if (i === 0) {
+                    // Initialize player's hand
+                    hands[j] = [];
+                }
+                // Add card to player's hand
                 hands[j].push(this.draw(1));
             }
         }

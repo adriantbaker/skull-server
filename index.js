@@ -2,6 +2,11 @@ const express = require('express');
 const socket = require('socket.io');
 const Games = require('./utils/classes/Games');
 const Game = require('./utils/classes/Game');
+const createGame = require('./listeners/lobby/createGame');
+const joinGame = require('./listeners/lobby/joinGame');
+const startGame = require('./listeners/lobby/startGame');
+const joinLobby = require('./listeners/lobby/joinLobby');
+const leaveLobby = require('./listeners/lobby/leaveLobby');
 
 // App setup
 const app = express();
@@ -16,52 +21,15 @@ const lobby = new Games();
 
 io.on('connection', (socket) => {
     console.log('Socket connected: ' + socket.id);
-    socket.join('gameLobby');
-    socket.emit('games', lobby.getGames());
 
-    socket.on('createGame', (request) => {
-        console.log('Creating game...')
-        const { gameName, ownerName } = request;
-        // Add game to lobby
-        const game = new Game(gameName, ownerName);
-        lobby.addGame(game);
+    // Join / leave lobby
+    socket.on('joinLobby', joinLobby(socket, lobby));
+    socket.on('leaveLobby', leaveLobby(socket));
 
-        // Notify lobby and creator of new game
-        io.to('gameLobby').emit('games', lobby.getGames());
-        socket.emit('createGameResponse', game);
-
-        // Subscribe user to game room, leave lobby
-        const gameId = game.id;
-        socket.leave('gameLobby');
-        socket.join(gameId);
-    })
-
-    socket.on('joinGame', (request) => {
-        console.log('Player is joining game...')
-        const { gameId, playerName } = request;
-        // Add user to game
-        const game = lobby.getGame(gameId);
-        game.addPlayer(playerName);
-
-        // Subscribe user to game room, leave lobby
-        socket.leave('gameLobby');
-        socket.join(gameId);
-
-        // Notify lobby and game room that player joined
-        io.to('gameLobby').emit('games', lobby.getGames());
-        io.to(gameId).emit('players', game.players)
-    })
-
-    socket.on('startGame', (request) => {
-        console.log('Game owner is starting game...');
-        const { gameId, ownerName } = request;
-
-        const game = lobby.getGame(gameId);
-        game.startGame();
-
-        console.log(game);
-    })
-
+    // Lobby game CRUD
+    socket.on('createGame', createGame(io, socket, lobby));
+    socket.on('joinGame', joinGame(io, socket, lobby));
+    socket.on('startGame', startGame(io, socket, lobby));
 
     socket.on('disconnect', () => {
         console.log('Socket disconnected: ' + socket.id);
