@@ -18,6 +18,7 @@ const server = app.listen(4000, () => {
 const io = socket(server);
 
 const lobby = new Games();
+const activeGames = new Games();
 
 io.on('connection', (socket) => {
     console.log('Socket connected: ' + socket.id);
@@ -29,7 +30,7 @@ io.on('connection', (socket) => {
     // Lobby game CRUD
     socket.on('createGame', createGame(io, socket, lobby));
     socket.on('joinGame', joinGame(io, socket, lobby));
-    socket.on('startGame', startGame(io, socket, lobby));
+    socket.on('startGame', startGame(io, socket, lobby, activeGames));
 
     socket.on('disconnect', () => {
         console.log('Socket disconnected: ' + socket.id);

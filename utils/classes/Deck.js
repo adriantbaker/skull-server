@@ -52,7 +52,7 @@ class Deck {
                     hands[j] = [];
                 }
                 // Add card to player's hand
-                hands[j].push(this.draw(1));
+                hands[j].push(...this.draw(1));
             }
         }
         return hands;

@@ -41,13 +41,14 @@ class CoupGame {
         this.players = new Players();
 
         // Deal 2 Coup cards to each player
-        const numPlayers = this.players.length;
+        const playersArray = players.getPlayers();
+        const numPlayers = playersArray.length;
         const hands = this.deck.deal(2, numPlayers);
         for (let i = 0; i < numPlayers; i++) {
-            const playerName = players[i];
-            const player = new CoupPlayer(playerName);
-            player.addCards(hands[i]);
-            this.players.addPlayer(player);
+            const player = playersArray[i];
+            const coupPlayer = new CoupPlayer(player);
+            coupPlayer.addCards(hands[i]);
+            this.players.addPlayer(coupPlayer);
         }
     }
 

@@ -1,27 +1,38 @@
 const CoupGame = require("./CoupGame");
+const Players = require("./Players");
 
 class Game {
     constructor(name, owner) {
         console.log("Constructing new game - " + name);
-        this.id = owner + Date.now();
+        this.id = owner.id + name + Date.now();
         this.owner = owner;
         this.name = name;
-        this.players = [owner];
+        this.players = new Players([owner]);
         this.started = false;
         this.gameInfo = null;
     }
 
-    addPlayer(playerName) {
-        this.players.push(playerName);
+    addPlayer(player) {
+        this.players.addPlayer(player)
     }
 
-    removePlayer(playerName) {
-        this.players = this.players.filter(p => p !== playerName);
+    removePlayer(player) {
+        this.players.removePlayer(player.id);
     }
 
     startGame() {
         this.started = true;
         this.gameInfo = new CoupGame(this.players);
+    }
+
+    getPublic() {
+        return {
+            id: this.id,
+            owner: this.owner,
+            name: this.name,
+            started: this.started,
+            players: this.players.getPlayersPublic()
+        }
     }
 }
 

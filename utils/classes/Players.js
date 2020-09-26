@@ -1,6 +1,9 @@
 class Players {
-    constructor() {
+    constructor(players = []) {
         this.players = {};
+        players.forEach(player => {
+            this.players[player.id] = player;
+        })
     }
 
     addPlayer(player) {
@@ -17,6 +20,11 @@ class Players {
 
     getPlayers() {
         return Object.values(this.players);
+    }
+
+    getPlayersPublic() {
+        return Object.values(this.players)
+            .map(player => player.getPublic());
     }
 
     getNumPlayers() {
