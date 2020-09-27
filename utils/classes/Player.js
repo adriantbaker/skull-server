@@ -4,6 +4,7 @@ class Player {
         this.name = name;
         this.isOwner = isOwner;
         this.id = name + Date.now();
+        this.turnNumber = -1;
     }
 
     getPublic() {

@@ -1,3 +1,5 @@
+const shuffle = require("../helpers/shuffle");
+
 class Players {
     constructor(players = []) {
         this.players = {};
@@ -27,8 +29,23 @@ class Players {
             .map(player => player.getPublic());
     }
 
+    getOpponentsPublic(playerId) {
+        return Object.values(this.players)
+            .filter(player => player.id !== playerId)
+            .map(player => player.getPublic());
+    }
+
     getNumPlayers() {
         return Object.keys(this.players).length;
+    }
+
+    assignTurnOrder() {
+        const playerIds = Object.keys(this.players);
+        shuffle(playerIds);
+        playerIds.forEach((playerId, i) => {
+            this.players[playerId].turnOrder = i;
+        })
+        this.turnOrder = playerIds;
     }
 }
 

@@ -2,6 +2,7 @@ const CoupCard = require("./CoupCard");
 const Deck = require("./Deck");
 const CoupPlayer = require("./CoupPlayer");
 const Players = require("./Players");
+const shuffle = require("../helpers/shuffle");
 
 const deckCardTypes = [
     {
@@ -37,11 +38,14 @@ class CoupGame {
         })
         this.deck = new Deck(deckCards);
 
+        // Shuffle players for a random turn order
+        const playersArray = players.getPlayers();
+        shuffle(playersArray);
+
         // Initialize players
         this.players = new Players();
 
         // Deal 2 Coup cards to each player
-        const playersArray = players.getPlayers();
         const numPlayers = playersArray.length;
         const hands = this.deck.deal(2, numPlayers);
         for (let i = 0; i < numPlayers; i++) {

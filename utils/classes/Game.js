@@ -1,3 +1,4 @@
+const shuffle = require("../helpers/shuffle");
 const CoupGame = require("./CoupGame");
 const Players = require("./Players");
 
@@ -10,6 +11,7 @@ class Game {
         this.players = new Players([owner]);
         this.started = false;
         this.gameInfo = null;
+        this.currentTurn = -1;
     }
 
     addPlayer(player) {
@@ -21,7 +23,9 @@ class Game {
     }
 
     startGame() {
+        this.players.assignTurnOrder();
         this.started = true;
+        this.currentTurn = 0;
         this.gameInfo = new CoupGame(this.players);
     }
 
