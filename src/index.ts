@@ -1,13 +1,13 @@
-const express = require('express');
-const socket = require('socket.io');
-const Games = require('./utils/classes/Games');
-const Game = require('./utils/classes/Game');
-const createGame = require('./listeners/lobby/createGame');
-const joinGame = require('./listeners/lobby/joinGame');
-const startGame = require('./listeners/lobby/startGame');
-const joinLobby = require('./listeners/lobby/joinLobby');
-const leaveLobby = require('./listeners/lobby/leaveLobby');
-const getFirstHands = require('./listeners/coupGame/getFirstHands');
+import express from 'express';
+import socket from 'socket.io';
+import Games from './utils/classes/Games';
+import Game from './utils/classes/Game';
+import createGame from './listeners/lobby/createGame';
+import joinGame from './listeners/lobby/joinGame';
+import startGame from './listeners/lobby/startGame';
+import joinLobby from './listeners/lobby/joinLobby';
+import leaveLobby from './listeners/lobby/leaveLobby';
+import getFirstHands from './listeners/coupGame/getFirstHands';
 
 // App setup
 const app = express();
