@@ -12,8 +12,8 @@ import getFirstHands from './listeners/coupGame/getFirstHands';
 // App setup
 const app = express();
 const server = app.listen(4000, () => {
-    console.log("Listening to requests on 4000");
-})
+    console.log('Listening to requests on 4000');
+});
 
 // Socket setup
 const io = socket(server);
@@ -22,7 +22,7 @@ const lobby = new Games();
 const activeGames = new Games();
 
 io.on('connection', (socket) => {
-    console.log('Socket connected: ' + socket.id);
+    console.log(`Socket connected: ${socket.id}`);
 
     // Join / leave lobby
     socket.on('joinLobby', joinLobby(socket, lobby));
@@ -34,10 +34,9 @@ io.on('connection', (socket) => {
     socket.on('startGame', startGame(io, socket, lobby, activeGames));
 
     // Game interactions
-    socket.on('getFirstHands', getFirstHands(socket, activeGames))
+    socket.on('getFirstHands', getFirstHands(socket, activeGames));
 
     socket.on('disconnect', () => {
-        console.log('Socket disconnected: ' + socket.id);
-    })
-})
-
+        console.log(`Socket disconnected: ${socket.id}`);
+    });
+});
