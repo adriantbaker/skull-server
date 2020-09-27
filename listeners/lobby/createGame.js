@@ -10,8 +10,10 @@ const createGame = (io, socket, lobby) => (request) => {
     lobby.addGame(game);
 
     // Notify lobby and creator of new game
+    console.log("Sending games");
+    console.log(lobby.getGamesPublic())
     io.to('gameLobby').emit('games', lobby.getGamesPublic());
-    socket.emit('createGameResponse', game);
+    socket.emit('createGameResponse', { game: game.getPublic(), player: owner });
 
     // Subscribe user to game room, leave lobby
     const gameId = game.id;

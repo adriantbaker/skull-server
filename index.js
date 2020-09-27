@@ -7,6 +7,7 @@ const joinGame = require('./listeners/lobby/joinGame');
 const startGame = require('./listeners/lobby/startGame');
 const joinLobby = require('./listeners/lobby/joinLobby');
 const leaveLobby = require('./listeners/lobby/leaveLobby');
+const getFirstHand = require('./listeners/coupGame/getFirstHand');
 
 // App setup
 const app = express();
@@ -31,6 +32,9 @@ io.on('connection', (socket) => {
     socket.on('createGame', createGame(io, socket, lobby));
     socket.on('joinGame', joinGame(io, socket, lobby));
     socket.on('startGame', startGame(io, socket, lobby, activeGames));
+
+    // Game interactions
+    socket.on('getFirstHand', getFirstHand(socket, activeGames))
 
     socket.on('disconnect', () => {
         console.log('Socket disconnected: ' + socket.id);
