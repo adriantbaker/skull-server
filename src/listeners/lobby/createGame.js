@@ -1,8 +1,8 @@
-const Game = require('../../utils/classes/Game');
-const Player = require('../../utils/classes/Player');
+import Game from '../../utils/classes/Game/Game';
+import Player from '../../utils/classes/Player/Player';
 
 const createGame = (io, socket, lobby) => (request) => {
-    console.log("Got game create")
+    console.log('Got game create');
     const { gameName, ownerName } = request;
     // Add game to lobby
     const owner = new Player(socket.id, ownerName, true);
@@ -10,8 +10,8 @@ const createGame = (io, socket, lobby) => (request) => {
     lobby.addGame(game);
 
     // Notify lobby and creator of new game
-    console.log("Sending games");
-    console.log(lobby.getGamesPublic())
+    console.log('Sending games');
+    console.log(lobby.getGamesPublic());
     io.to('gameLobby').emit('games', lobby.getGamesPublic());
     socket.emit('createGameResponse', { game: game.getPublic(), player: owner });
 
@@ -19,6 +19,6 @@ const createGame = (io, socket, lobby) => (request) => {
     const gameId = game.id;
     socket.leave('gameLobby');
     socket.join(gameId);
-}
+};
 
-module.exports = createGame
+export default createGame;

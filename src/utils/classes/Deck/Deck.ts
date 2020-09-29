@@ -1,17 +1,24 @@
-const shuffleCards = require("../helpers/shuffle");
+import CoupCard from '../Card/CoupCard';
+import shuffleCards from '../../helpers/shuffle';
+
+export type Hand = Array<CoupCard>
+export type Hands = Array<Hand>
 
 class Deck {
-    constructor(unshuffledCards) {
+    cardsInDeck: Array<CoupCard>
+    cardsInDiscard: Array<CoupCard>
+
+    constructor(unshuffledCards: Array<CoupCard>) {
         const cards = unshuffledCards.map((card, i) => ({
             ...card,
-            id: i
+            id: i,
         }));
         shuffleCards(cards);
         this.cardsInDeck = cards;
         this.cardsInDiscard = [];
     }
 
-    draw(numCards = 1) {
+    draw(numCards = 1): Hand {
         const numCardsToDraw = numCards;
         const numCardsInDeck = this.cardsInDeck.length;
         if (numCardsInDeck >= numCardsToDraw) {
@@ -26,24 +33,24 @@ class Deck {
         this.cardsInDiscard = [];
         shuffleCards(this.cardsInDeck);
         // Draw remaining number of cards
-        const numCardsLeftToDraw = numCardsLeftToDraw - numCardsInDeck;
-        drawnCards.push(this.cardsInDeck.splice(0, numCardsLeftToDraw));
+        const numCardsLeftToDraw = numCards - numCardsInDeck;
+        drawnCards.push(...this.cardsInDeck.splice(0, numCardsLeftToDraw));
         return drawnCards;
     }
 
-    discard(cards) {
+    discard(cards: Hand): void {
         this.cardsInDiscard.push(...cards);
     }
 
-    insert(cards, shuffle = true) {
+    insert(cards: Hand, shuffle = true): void {
         this.cardsInDeck.push(...cards);
         if (shuffle) {
             shuffleCards(this.cardsInDeck);
         }
     }
 
-    deal(numCards, numPlayers) {
-        const hands = [];
+    deal(numCards: number, numPlayers: number): Hands {
+        const hands: Hands = [];
         // Draw 1 card per player at a time
         for (let i = 0; i < numCards; i++) {
             for (let j = 0; j < numPlayers; j++) {
@@ -59,4 +66,4 @@ class Deck {
     }
 }
 
-module.exports = Deck;
+export default Deck;

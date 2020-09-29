@@ -1,53 +1,55 @@
-const CoupCard = require("./CoupCard");
-const Deck = require("./Deck");
-const CoupPlayer = require("./CoupPlayer");
-const Players = require("./Players");
-const shuffle = require("../helpers/shuffle");
+import CoupCard, { CardType } from '../Card/CoupCard';
+import Deck from '../Deck/Deck';
+import CoupPlayer from '../Player/CoupPlayer';
+import CardGame from './CardGame';
 
 const deckCardTypes = [
     {
-        name: 'duke',
-        count: 3
+        name: CardType.Ambassador,
+        count: 3,
     },
     {
-        name: 'assassin',
-        count: 3
+        name: CardType.Assassin,
+        count: 3,
     },
     {
-        name: 'captain',
-        count: 3
+        name: CardType.Captain,
+        count: 3,
     },
     {
-        name: 'ambassador',
-        count: 3
+        name: CardType.Contessa,
+        count: 3,
     },
     {
-        name: 'contessa',
-        count: 3
-    }
+        name: CardType.Duke,
+        count: 3,
+    },
 ];
 
-class CoupGame {
-    constructor(players) {
+class CoupGame extends CardGame {
+    constructor(name: string, owner: CoupPlayer) {
         // Initialize Coup deck
-        const deckCards = [];
-        deckCardTypes.forEach(type => {
+        const deckCards: Array<CoupCard> = [];
+        let numCardsPushed = 0;
+        deckCardTypes.forEach((type) => {
             for (let i = 0; i < type.count; i++) {
-                deckCards.push(new CoupCard(type.name))
+                deckCards.push(new CoupCard(type.name, numCardsPushed));
+                numCardsPushed += 1;
             }
-        })
-        this.deck = new Deck(deckCards);
+        });
+        const deck = new Deck(deckCards);
 
-        // Shuffle players for a random turn order
-        const playersArray = players.getPlayers();
-        shuffle(playersArray);
+        super(name, owner, deck);
+    }
 
-        // Initialize players
-        this.players = new Players();
+    startGame(): void {
+        this.players.assignTurnOrder();
 
         // Deal 2 Coup cards to each player
-        const numPlayers = playersArray.length;
+        const numPlayers = this.players.getNumPlayers();
         const hands = this.deck.deal(2, numPlayers);
+        this.players.dealToAll(hands);
+
         for (let i = 0; i < numPlayers; i++) {
             const player = playersArray[i];
             const coupPlayer = new CoupPlayer(player);
@@ -56,36 +58,36 @@ class CoupGame {
         }
     }
 
-    income(playerId) {
+    income(playerId: string): void {
         const player = this.players.getPlayer(playerId);
         player.addCoins(1);
     }
 
-    foreignAid(playerId) {
+    foreignAid(playerId: string): void {
         const player = this.players.getPlayer(playerId);
         player.addCoins(2);
     }
 
-    coup(playerId, targetId) {
+    coup(playerId: string, targetId: string): void {
         const player = this.players.getPlayer(playerId);
         const target = this.players.getPlayer(targetId);
         player.removeCoins(7);
         // TODO: prompt target to choose 1 card to remove
     }
 
-    tax(playerId) {
+    tax(playerId: string): void {
         const player = this.players.getPlayer(playerId);
         player.addCoins(3);
     }
 
-    assassinate(playerId, targetId) {
+    assassinate(playerId: string, targetId: string): void {
         const player = this.players.getPlayer(playerId);
         const target = this.players.getPlayer(targetId);
         player.removeCoins(3);
         // TODO: prompt target to choose 1 card to remove
     }
 
-    steal(playerId, targetId) {
+    steal(playerId: string, targetId: string): void {
         const player = this.players.getPlayer(playerId);
         const target = this.players.getPlayer(targetId);
         target.removeCoins(2);
@@ -93,7 +95,7 @@ class CoupGame {
         // TODO: account for player having less than 2 coins
     }
 
-    exchange(playerId) {
+    exchange(playerId: string): void {
         const player = this.players.getPlayer(playerId);
         const newCards = this.deck.draw(2);
         player.addCards(newCards);
@@ -101,22 +103,21 @@ class CoupGame {
         this.deck.insert(newCards);
     }
 
-    blockForeignAid() {
+    // blockForeignAid() {
 
-    }
+    // }
 
-    blockAssassination() {
+    // blockAssassination() {
 
-    }
+    // }
 
-    blockSteal() {
+    // blockSteal() {
 
-    }
+    // }
 
-    challenge() {
-        
-    }
+    // challenge() {
 
+    // }
 }
 
-module.exports = CoupGame;
+export default CoupGame;
