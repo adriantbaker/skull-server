@@ -1,15 +1,12 @@
-import CardPlayer from '../Player/CardPlayer';
 import CoupPlayer from '../Player/CoupPlayer';
-import Player from '../Player/Player';
 import shuffle from '../../helpers/shuffle';
+import { Hands } from '../Deck/CoupDeck';
 
-export type AnyPlayer = Player | CardPlayer | CoupPlayer
-
-class Players<PlayerType extends AnyPlayer> {
-    players: { [key: string]: PlayerType }
+class CoupPlayers {
+    players: { [key: string]: CoupPlayer }
     turnOrder: Array<string>
 
-    constructor(players: Array<PlayerType> = []) {
+    constructor(players: Array<CoupPlayer> = []) {
         this.players = {};
         this.turnOrder = [];
         players.forEach((player) => {
@@ -17,34 +14,33 @@ class Players<PlayerType extends AnyPlayer> {
         });
     }
 
-    addPlayer(player: PlayerType): void {
+    addPlayer(player: CoupPlayer): void {
         this.players[player.id] = player;
     }
 
-    removePlayer(playerId: string): PlayerType {
+    removePlayer(playerId: string): CoupPlayer {
         const player = this.players[playerId];
         delete this.players[playerId];
         return player;
     }
 
-    getPlayer(playerId: string): PlayerType {
+    getPlayer(playerId: string): CoupPlayer {
         return this.players[playerId];
     }
 
-    getPlayers(): Array<PlayerType> {
+    getPlayers(): Array<CoupPlayer> {
         return Object.values(this.players);
     }
 
-    // getPlayersPublic(): Array<PlayerPublic> {
-    //     return Object.values(this.players)
-    //         .map((player) => player.getPublic());
-    // }
-
-    // getOpponentsPublic(playerId: string): Array<PlayerPublic> {
-    //     return Object.values(this.players)
-    //         .filter((player) => player.id !== playerId)
-    //         .map((player) => player.getPublic());
-    // }
+    dealToAll(hands: Hands): void {
+        if (this.turnOrder.length === 0) {
+            this.assignTurnOrder();
+        }
+        this.turnOrder.forEach((playerId, i) => {
+            const player = this.getPlayer(playerId);
+            player.addCards(hands[i]);
+        });
+    }
 
     getNumPlayers(): number {
         return Object.keys(this.players).length;
@@ -60,4 +56,4 @@ class Players<PlayerType extends AnyPlayer> {
     }
 }
 
-export default Players;
+export default CoupPlayers;

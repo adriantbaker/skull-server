@@ -1,26 +1,23 @@
-import CardGame from '../Game/CardGame';
 import CoupGame from '../Game/CoupGame';
-import Game, { AnyGame } from '../Game/Game';
-import CoupPlayer from '../Player/CoupPlayer';
 
-class Games<GameType extends AnyGame> {
-    games: { [key: string]: Game<GameType> }
+class CoupGames {
+    games: { [key: string]: CoupGame }
 
     constructor() {
         this.games = {};
     }
 
-    addGame(game: Game<GameType>): void {
+    addGame(game: CoupGame): void {
         this.games[game.id] = game;
     }
 
-    removeGame(gameId: string): Game<GameType> {
+    removeGame(gameId: string): CoupGame {
         const game = this.games[gameId];
         delete this.games[gameId];
         return game;
     }
 
-    getGame(gameId: string): Game<GameType> {
+    getGame(gameId: string): CoupGame {
         return this.games[gameId];
     }
 
@@ -28,7 +25,7 @@ class Games<GameType extends AnyGame> {
     //     return this.games[gameId].getPublic();
     // }
 
-    getGames(): Array<Game<GameType>> {
+    getGames(): Array<CoupGame> {
         return Object.values(this.games);
     }
 
@@ -43,4 +40,4 @@ class Games<GameType extends AnyGame> {
     }
 }
 
-export default Games;
+export default CoupGames;

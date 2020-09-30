@@ -1,7 +1,7 @@
 import CoupCard, { CardType } from '../Card/CoupCard';
-import Deck from '../Deck/Deck';
+import Deck from '../Deck/CoupDeck';
 import CoupPlayer from '../Player/CoupPlayer';
-import CardGame from './CardGame';
+import CoupPlayers from '../Players/CoupPlayers';
 
 const deckCardTypes = [
     {
@@ -26,8 +26,23 @@ const deckCardTypes = [
     },
 ];
 
-class CoupGame extends CardGame {
+class CoupGame {
+    id: string
+    owner: CoupPlayer
+    name: string
+    players: CoupPlayers
+    started: boolean
+    currentTurn: number
+    deck: Deck
+
     constructor(name: string, owner: CoupPlayer) {
+        this.id = owner.id + name + Date.now();
+        this.owner = owner;
+        this.name = name;
+        // this.players
+        this.started = false;
+        this.currentTurn = -1;
+
         // Initialize Coup deck
         const deckCards: Array<CoupCard> = [];
         let numCardsPushed = 0;
@@ -37,9 +52,17 @@ class CoupGame extends CardGame {
                 numCardsPushed += 1;
             }
         });
-        const deck = new Deck(deckCards);
 
-        super(name, owner, deck);
+        this.players = new CoupPlayers();
+        this.deck = new Deck(deckCards);
+    }
+
+    addPlayer(player: CoupPlayer): void {
+        this.players.addPlayer(player);
+    }
+
+    removePlayer(playerId: string): CoupPlayer {
+        return this.players.removePlayer(playerId) as CoupPlayer;
     }
 
     startGame(): void {
@@ -49,13 +72,6 @@ class CoupGame extends CardGame {
         const numPlayers = this.players.getNumPlayers();
         const hands = this.deck.deal(2, numPlayers);
         this.players.dealToAll(hands);
-
-        for (let i = 0; i < numPlayers; i++) {
-            const player = playersArray[i];
-            const coupPlayer = new CoupPlayer(player);
-            coupPlayer.addCards(hands[i]);
-            this.players.addPlayer(coupPlayer);
-        }
     }
 
     income(playerId: string): void {
@@ -70,7 +86,7 @@ class CoupGame extends CardGame {
 
     coup(playerId: string, targetId: string): void {
         const player = this.players.getPlayer(playerId);
-        const target = this.players.getPlayer(targetId);
+        // const target = this.players.getPlayer(targetId);
         player.removeCoins(7);
         // TODO: prompt target to choose 1 card to remove
     }
@@ -82,7 +98,7 @@ class CoupGame extends CardGame {
 
     assassinate(playerId: string, targetId: string): void {
         const player = this.players.getPlayer(playerId);
-        const target = this.players.getPlayer(targetId);
+        // const target = this.players.getPlayer(targetId);
         player.removeCoins(3);
         // TODO: prompt target to choose 1 card to remove
     }

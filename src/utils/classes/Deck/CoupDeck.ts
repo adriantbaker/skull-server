@@ -4,7 +4,7 @@ import shuffleCards from '../../helpers/shuffle';
 export type Hand = Array<CoupCard>
 export type Hands = Array<Hand>
 
-class Deck {
+class CoupDeck {
     cardsInDeck: Array<CoupCard>
     cardsInDiscard: Array<CoupCard>
 
@@ -66,4 +66,4 @@ class Deck {
     }
 }
 
-export default Deck;
+export default CoupDeck;

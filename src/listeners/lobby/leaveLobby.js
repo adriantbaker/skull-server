@@ -1,5 +1,5 @@
 const leaveLobby = (socket) => () => {
     socket.leave('lobby');
-}
+};
 
-module.exports = leaveLobby
+module.exports = leaveLobby;
