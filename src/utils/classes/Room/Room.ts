@@ -4,7 +4,6 @@ import CoupPlayers from '../Player/CoupPlayers';
 export interface RoomPublic {
     id: string,
     name: string,
-    owner: CoupPlayerPublic
     players: Array<CoupPlayerPublic>
     maxPlayers: number
 }
@@ -12,14 +11,12 @@ export interface RoomPublic {
 class Room {
     id: string
     name: string
-    owner: CoupPlayer
     players: CoupPlayers
     maxPlayers: number
 
     constructor(name: string, owner: CoupPlayer) {
         this.id = owner.id + name + Date.now();
         this.name = name;
-        this.owner = owner;
         this.players = new CoupPlayers([owner]);
         this.maxPlayers = 5;
     }
@@ -38,7 +35,6 @@ class Room {
         return {
             id: this.id,
             name: this.name,
-            owner: this.owner.getPublic(),
             players: this.players.getAllPublic(),
             maxPlayers: this.maxPlayers,
         };

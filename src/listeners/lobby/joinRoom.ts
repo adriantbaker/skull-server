@@ -8,7 +8,7 @@ interface joinRoomRequest {
 }
 
 const joinRoom = (io: Server, socket: Socket, lobby: Rooms) => (
-    (request: joinRoomRequest) => {
+    (request: joinRoomRequest): void => {
         const { roomId, playerName } = request;
 
         // Add user to room
@@ -17,7 +17,7 @@ const joinRoom = (io: Server, socket: Socket, lobby: Rooms) => (
         room.addPlayer(player);
 
         // Notify joiner of successful join
-        socket.emit('joinRoomResponse', { room: room.getPublic(), player });
+        socket.emit('joinGameRoomResponse', { room: room.getPublic(), player });
 
         // Notify lobby and room room that player joined
         io.to('roomLobby').emit('rooms', lobby.getAllPublic());
@@ -29,4 +29,4 @@ const joinRoom = (io: Server, socket: Socket, lobby: Rooms) => (
     }
 );
 
-module.exports = joinRoom;
+export default joinRoom;

@@ -8,7 +8,7 @@ interface startRoomRequest {
 }
 
 const startGame = (io: Server, lobby: Rooms, activeGames: CoupGames) => (
-    (request: startRoomRequest) => {
+    (request: startRoomRequest): void => {
         const { roomId } = request;
 
         // Remove room from lobby
@@ -17,7 +17,7 @@ const startGame = (io: Server, lobby: Rooms, activeGames: CoupGames) => (
         io.to('roomLobby').emit('rooms', remainingRooms);
 
         // Create game from room
-        const game = new CoupGame(room.name, room.owner);
+        const game = new CoupGame(room.name, room.players, room.id);
         activeGames.addGame(game);
 
         game.startGame();
@@ -27,4 +27,4 @@ const startGame = (io: Server, lobby: Rooms, activeGames: CoupGames) => (
     }
 );
 
-module.exports = startGame;
+export default startGame;

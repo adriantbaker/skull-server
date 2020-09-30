@@ -7,13 +7,13 @@ interface getFirstHandsRequest {
 }
 
 const getFirstHands = (socket: Socket, activeGames: CoupGames) => (
-    (request: getFirstHandsRequest) => {
+    (request: getFirstHandsRequest): void => {
         const { gameId, playerId } = request;
         const game = activeGames.getOne(gameId);
-        const playerHand = game.players.getOnePublic(playerId);
+        const playerHand = game.players.getOnePrivate(playerId);
         const opponentHands = game.players.getOpponentsPublic(playerId);
         socket.emit('getFirstHandsResponse', { playerHand, opponentHands });
     }
 );
 
-module.exports = getFirstHands;
+export default getFirstHands;

@@ -1,4 +1,4 @@
-import CoupPlayer, { CoupPlayerPublic } from './CoupPlayer';
+import CoupPlayer, { CoupPlayerPrivate, CoupPlayerPublic } from './CoupPlayer';
 import shuffle from '../../helpers/shuffle';
 import { Hands } from '../Deck/CoupDeck';
 
@@ -49,8 +49,18 @@ class CoupPlayers {
         return this.players[playerId];
     }
 
+    /**
+     * @description Get player information that a player can know about oneself
+     */
     getOnePublic(playerId: string): CoupPlayerPublic {
         return this.players[playerId].getPublic();
+    }
+
+    /**
+     * @description Get player information that a player can know about one's opponent
+     */
+    getOnePrivate(playerId: string): CoupPlayerPrivate {
+        return this.players[playerId].getPrivate();
     }
 
     getAll(): Array<CoupPlayer> {
@@ -61,6 +71,10 @@ class CoupPlayers {
         return Object.values(this.players).map((player) => player.getPublic());
     }
 
+    /**
+     *
+     * @param playerId ID of the player whose opponents will be returned
+     */
     getOpponentsPublic(playerId: string): Array<CoupPlayerPublic> {
         return Object.values(this.players)
             .filter((player) => player.id !== playerId)

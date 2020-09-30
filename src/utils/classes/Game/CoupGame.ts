@@ -23,11 +23,19 @@ class CoupGame {
     currentTurn: number
     deck: Deck
 
-    constructor(name: string, owner: CoupPlayer) {
-        this.id = owner.id + name + Date.now();
+    /**
+     *
+     * @param name Game name
+     * @param players All players, including the owner
+     * @param id Can instantiate Game ID to be same as Room ID
+     */
+    constructor(name: string, players: CoupPlayers, id?: string) {
+        const owner = players.getAll().filter((player) => player.isOwner)[0];
+
+        this.id = id || owner.id + name + Date.now();
         this.owner = owner;
         this.name = name;
-        this.players = new CoupPlayers([owner]);
+        this.players = players;
         this.started = false;
         this.currentTurn = -1;
 
@@ -41,7 +49,6 @@ class CoupGame {
             }
         });
 
-        this.players = new CoupPlayers();
         this.deck = new Deck(deckCards);
     }
 
@@ -54,12 +61,17 @@ class CoupGame {
     }
 
     startGame(): void {
+        // Randomly assign turn order
         this.players.assignTurnOrder();
 
         // Deal 2 Coup cards to each player
         const numPlayers = this.players.getNumPlayers();
         const hands = this.deck.deal(2, numPlayers);
         this.players.dealToAll(hands);
+
+        // Signal game has started
+        this.started = true;
+        this.currentTurn = 0;
     }
 
     income(playerId: string): void {

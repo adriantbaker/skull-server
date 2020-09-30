@@ -17,8 +17,8 @@ const createRoom = (io: Server, socket: Socket, lobby: Rooms) => (
         lobby.addRoom(room);
 
         // Notify lobby and creator of new room
-        io.to('gameLobby').emit('games', lobby.getAllPublic());
-        socket.emit('createRoomResponse', { room: room.getPublic(), player: owner });
+        io.to('gameLobby').emit('rooms', lobby.getAllPublic());
+        socket.emit('createGameRoomResponse', { room: room.getPublic(), player: owner });
 
         // Subscribe user to room, leave lobby
         const roomId = room.id;

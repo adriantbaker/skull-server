@@ -1,10 +1,9 @@
-import CoupGames from '../../utils/classes/Game/CoupGames';
+import { Socket } from 'socket.io';
+import Rooms from '../../utils/classes/Room/Rooms';
 
-const joinLobby = (socket, lobby: CoupGames) => () => {
+const joinLobby = (socket: Socket, lobby: Rooms) => (): void => {
     socket.join('gameLobby');
-    console.log('Sending games');
-    console.log(lobby.getGamesPublic());
-    socket.emit('games', lobby.getGamesPublic());
+    socket.emit('rooms', lobby.getAllPublic());
 };
 
-module.exports = joinLobby;
+export default joinLobby;

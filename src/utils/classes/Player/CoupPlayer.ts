@@ -1,11 +1,20 @@
 import { Hand } from '../Deck/CoupDeck';
 
+export interface CoupPlayerPrivate {
+    id: string
+    name: string
+    isOwner: boolean
+    turnNumber: number
+    cards: Hand
+    numCoins: number
+}
+
 export interface CoupPlayerPublic {
-    id: string,
-    name: string,
-    isOwner: boolean,
-    turnNumber: number,
-    numCards: number,
+    id: string
+    name: string
+    isOwner: boolean
+    turnNumber: number
+    numCards: number
     numCoins: number
 }
 
@@ -46,6 +55,23 @@ class CoupPlayer {
 
     /** Getters */
 
+    /**
+     * @description Get information a player can know about oneself
+     */
+    getPrivate(): CoupPlayerPrivate {
+        return {
+            id: this.id,
+            name: this.name,
+            isOwner: this.isOwner,
+            turnNumber: this.turnNumber,
+            cards: this.cards,
+            numCoins: this.numCoins,
+        };
+    }
+
+    /**
+     * @description Get information a player can know about one's opponent
+     */
     getPublic(): CoupPlayerPublic {
         return {
             id: this.id,

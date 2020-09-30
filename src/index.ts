@@ -1,8 +1,8 @@
 import express from 'express';
 import socketIo from 'socket.io';
 import Games from './utils/classes/Game/CoupGames';
-import createGame from './listeners/lobby/createRoom';
-import joinGame from './listeners/lobby/joinRoom';
+import createRoom from './listeners/lobby/createRoom';
+import joinRoom from './listeners/lobby/joinRoom';
 import startGame from './listeners/lobby/startGame';
 import joinLobby from './listeners/lobby/joinLobby';
 import leaveLobby from './listeners/lobby/leaveLobby';
@@ -29,10 +29,12 @@ io.on('connection', (socket) => {
     socket.on('joinLobby', joinLobby(socket, lobby));
     socket.on('leaveLobby', leaveLobby(socket));
 
-    // Lobby game CRUD
-    socket.on('createGame', createGame(io, socket, lobby));
-    socket.on('joinGame', joinGame(io, socket, lobby));
-    socket.on('startGame', startGame(io, socket, lobby, activeGames));
+    // Lobby room CRUD
+    socket.on('createGameRoom', createRoom(io, socket, lobby));
+    socket.on('joinGameRoom', joinRoom(io, socket, lobby));
+
+    // Game start
+    socket.on('startGame', startGame(io, lobby, activeGames));
 
     // Game interactions
     socket.on('getFirstHands', getFirstHands(socket, activeGames));

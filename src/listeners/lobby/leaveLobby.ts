@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
 
-const leaveLobby = (socket: Socket) => () => {
+const leaveLobby = (socket: Socket) => (): void => {
     socket.leave('lobby');
 };
 
-module.exports = leaveLobby;
+export default leaveLobby;
