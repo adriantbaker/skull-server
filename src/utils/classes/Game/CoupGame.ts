@@ -1,30 +1,18 @@
-import CoupCard, { CardType } from '../Card/CoupCard';
+import CoupCard from '../Card/CoupCard';
 import Deck from '../Deck/CoupDeck';
-import CoupPlayer from '../Player/CoupPlayer';
-import CoupPlayers from '../Players/CoupPlayers';
+import CoupPlayer, { CoupPlayerPublic } from '../Player/CoupPlayer';
+import CoupPlayers from '../Player/CoupPlayers';
+import deckCardTypes from './deckCardTypes';
 
-const deckCardTypes = [
-    {
-        name: CardType.Ambassador,
-        count: 3,
-    },
-    {
-        name: CardType.Assassin,
-        count: 3,
-    },
-    {
-        name: CardType.Captain,
-        count: 3,
-    },
-    {
-        name: CardType.Contessa,
-        count: 3,
-    },
-    {
-        name: CardType.Duke,
-        count: 3,
-    },
-];
+export interface CoupGamePublic {
+    id: string,
+    owner: CoupPlayerPublic,
+    name: string,
+    players: Array<CoupPlayerPublic>,
+    started: boolean,
+    currentTurn: number,
+    deck: Deck
+}
 
 class CoupGame {
     id: string
@@ -39,7 +27,7 @@ class CoupGame {
         this.id = owner.id + name + Date.now();
         this.owner = owner;
         this.name = name;
-        // this.players
+        this.players = new CoupPlayers([owner]);
         this.started = false;
         this.currentTurn = -1;
 
@@ -75,44 +63,44 @@ class CoupGame {
     }
 
     income(playerId: string): void {
-        const player = this.players.getPlayer(playerId);
+        const player = this.players.getOne(playerId);
         player.addCoins(1);
     }
 
     foreignAid(playerId: string): void {
-        const player = this.players.getPlayer(playerId);
+        const player = this.players.getOne(playerId);
         player.addCoins(2);
     }
 
     coup(playerId: string, targetId: string): void {
-        const player = this.players.getPlayer(playerId);
-        // const target = this.players.getPlayer(targetId);
+        const player = this.players.getOne(playerId);
+        // const target = this.players.getOne(targetId);
         player.removeCoins(7);
         // TODO: prompt target to choose 1 card to remove
     }
 
     tax(playerId: string): void {
-        const player = this.players.getPlayer(playerId);
+        const player = this.players.getOne(playerId);
         player.addCoins(3);
     }
 
     assassinate(playerId: string, targetId: string): void {
-        const player = this.players.getPlayer(playerId);
-        // const target = this.players.getPlayer(targetId);
+        const player = this.players.getOne(playerId);
+        // const target = this.players.getOne(targetId);
         player.removeCoins(3);
         // TODO: prompt target to choose 1 card to remove
     }
 
     steal(playerId: string, targetId: string): void {
-        const player = this.players.getPlayer(playerId);
-        const target = this.players.getPlayer(targetId);
+        const player = this.players.getOne(playerId);
+        const target = this.players.getOne(targetId);
         target.removeCoins(2);
         player.addCoins(2);
         // TODO: account for player having less than 2 coins
     }
 
     exchange(playerId: string): void {
-        const player = this.players.getPlayer(playerId);
+        const player = this.players.getOne(playerId);
         const newCards = this.deck.draw(2);
         player.addCards(newCards);
         // TODO: prompt player to choose which 2 to keep, which 2 to discard
@@ -134,6 +122,20 @@ class CoupGame {
     // challenge() {
 
     // }
+
+    /** Getters */
+
+    getPublic(): CoupGamePublic {
+        return {
+            id: this.id,
+            owner: this.owner.getPublic(),
+            name: this.name,
+            players: this.players.getAllPublic(),
+            started: this.started,
+            currentTurn: this.currentTurn,
+            deck: this.deck,
+        };
+    }
 }
 
 export default CoupGame;

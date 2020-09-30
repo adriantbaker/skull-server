@@ -1,5 +1,14 @@
 import { Hand } from '../Deck/CoupDeck';
 
+export interface CoupPlayerPublic {
+    id: string,
+    name: string,
+    isOwner: boolean,
+    turnNumber: number,
+    numCards: number,
+    numCoins: number
+}
+
 class CoupPlayer {
     id: string
     socketId: string
@@ -33,6 +42,19 @@ class CoupPlayer {
 
     removeCoins(numCoins: number): void {
         this.numCoins = Math.max(this.numCoins - numCoins, 0);
+    }
+
+    /** Getters */
+
+    getPublic(): CoupPlayerPublic {
+        return {
+            id: this.id,
+            name: this.name,
+            isOwner: this.isOwner,
+            turnNumber: this.turnNumber,
+            numCards: this.cards.length,
+            numCoins: this.numCoins,
+        };
     }
 }
 

@@ -1,4 +1,6 @@
-const joinLobby = (socket, lobby) => () => {
+import CoupGames from '../../utils/classes/Game/CoupGames';
+
+const joinLobby = (socket, lobby: CoupGames) => () => {
     socket.join('gameLobby');
     console.log('Sending games');
     console.log(lobby.getGamesPublic());

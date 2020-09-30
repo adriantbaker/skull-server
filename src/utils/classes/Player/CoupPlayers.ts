@@ -1,4 +1,4 @@
-import CoupPlayer from '../Player/CoupPlayer';
+import CoupPlayer, { CoupPlayerPublic } from './CoupPlayer';
 import shuffle from '../../helpers/shuffle';
 import { Hands } from '../Deck/CoupDeck';
 
@@ -24,26 +24,14 @@ class CoupPlayers {
         return player;
     }
 
-    getPlayer(playerId: string): CoupPlayer {
-        return this.players[playerId];
-    }
-
-    getPlayers(): Array<CoupPlayer> {
-        return Object.values(this.players);
-    }
-
     dealToAll(hands: Hands): void {
         if (this.turnOrder.length === 0) {
             this.assignTurnOrder();
         }
         this.turnOrder.forEach((playerId, i) => {
-            const player = this.getPlayer(playerId);
+            const player = this.getOne(playerId);
             player.addCards(hands[i]);
         });
-    }
-
-    getNumPlayers(): number {
-        return Object.keys(this.players).length;
     }
 
     assignTurnOrder(): void {
@@ -53,6 +41,34 @@ class CoupPlayers {
             this.players[playerId].turnNumber = i;
         });
         this.turnOrder = playerIds;
+    }
+
+    /** Getters */
+
+    getOne(playerId: string): CoupPlayer {
+        return this.players[playerId];
+    }
+
+    getOnePublic(playerId: string): CoupPlayerPublic {
+        return this.players[playerId].getPublic();
+    }
+
+    getAll(): Array<CoupPlayer> {
+        return Object.values(this.players);
+    }
+
+    getAllPublic(): Array<CoupPlayerPublic> {
+        return Object.values(this.players).map((player) => player.getPublic());
+    }
+
+    getOpponentsPublic(playerId: string): Array<CoupPlayerPublic> {
+        return Object.values(this.players)
+            .filter((player) => player.id !== playerId)
+            .map((player) => player.getPublic());
+    }
+
+    getNumPlayers(): number {
+        return Object.keys(this.players).length;
     }
 }
 

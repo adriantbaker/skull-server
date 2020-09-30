@@ -1,0 +1,32 @@
+import { Server, Socket } from 'socket.io';
+import CoupPlayer from '../../utils/classes/Player/CoupPlayer';
+import Rooms from '../../utils/classes/Room/Rooms';
+
+interface joinRoomRequest {
+    roomId: string
+    playerName: string
+}
+
+const joinRoom = (io: Server, socket: Socket, lobby: Rooms) => (
+    (request: joinRoomRequest) => {
+        const { roomId, playerName } = request;
+
+        // Add user to room
+        const room = lobby.getOne(roomId);
+        const player = new CoupPlayer(socket.id, playerName);
+        room.addPlayer(player);
+
+        // Notify joiner of successful join
+        socket.emit('joinRoomResponse', { room: room.getPublic(), player });
+
+        // Notify lobby and room room that player joined
+        io.to('roomLobby').emit('rooms', lobby.getAllPublic());
+        io.to(roomId).emit('updateRoom', { players: room.players.getAllPublic() });
+
+        // Subscribe user to room room, leave lobby
+        socket.leave('roomLobby');
+        socket.join(roomId);
+    }
+);
+
+module.exports = joinRoom;

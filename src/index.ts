@@ -1,12 +1,13 @@
 import express from 'express';
 import socketIo from 'socket.io';
-import Games from './utils/classes/Games/CoupGames';
-import createGame from './listeners/lobby/createGame';
-import joinGame from './listeners/lobby/joinGame';
+import Games from './utils/classes/Game/CoupGames';
+import createGame from './listeners/lobby/createRoom';
+import joinGame from './listeners/lobby/joinRoom';
 import startGame from './listeners/lobby/startGame';
 import joinLobby from './listeners/lobby/joinLobby';
 import leaveLobby from './listeners/lobby/leaveLobby';
 import getFirstHands from './listeners/coupGame/getFirstHands';
+import Rooms from './utils/classes/Room/Rooms';
 
 // App setup
 const app = express();
@@ -18,7 +19,7 @@ const server = app.listen(4000, () => {
 const io = socketIo(server);
 
 // Data initialize
-const lobby = new Games();
+const lobby = new Rooms();
 const activeGames = new Games();
 
 io.on('connection', (socket) => {
