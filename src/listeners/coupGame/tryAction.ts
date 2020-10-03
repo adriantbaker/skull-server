@@ -5,11 +5,8 @@ import { GameUpdate } from './getGameSetup';
 
 export enum ActionType {
     Income = 'income',
-    ForeignAid = 'foreignAid'
-}
-
-export enum BlockActionType {
-    BlockForeignAid = 'blockForeignAid'
+    ForeignAid = 'foreignAid',
+    Coup = 'coup'
 }
 
 interface tryActionRequest {
@@ -31,9 +28,10 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
     if (actionType === ActionType.Income) {
         // Special case - no one can challenge income
     } else {
-        const tryAccepted = game.attempt(actionType, playerId, claimedCard, targetId);
+        const tryReceived = game.attempt(actionType, playerId, claimedCard, targetId);
 
-        if (tryAccepted && game.currentAction) {
+        if (tryReceived && game.currentAction) {
+            // Notify players that current player is attempting an action
             const gameUpdate: GameUpdate = {
                 currentTurn: null,
                 currentAction: game.currentAction,

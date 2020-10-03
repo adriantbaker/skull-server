@@ -1,25 +1,12 @@
-import { ActionType, BlockActionType } from '../../../listeners/coupGame/tryAction';
+import { ActionType } from '../../../listeners/coupGame/tryAction';
+import { BlockActionType } from '../../../listeners/coupGame/tryBlock';
 import { ChallengeOutcome } from '../../interfaces/signals';
 import CoupCard, { CardType } from '../Card/CoupCard';
 import Deck from '../Deck/CoupDeck';
 import CoupPlayer, { CoupPlayerPublic } from '../Player/CoupPlayer';
 import CoupPlayers from '../Player/CoupPlayers';
 import deckCardTypes from './deckCardTypes';
-
-export interface Action {
-    isBlock: boolean,
-    actionType: ActionType | BlockActionType,
-    claimedCard: CardType | undefined,
-    actingPlayerId: string,
-    actingPlayerName: string,
-    targetPlayerId: string | undefined,
-    targetPlayerName: string | undefined,
-    canChallenge: boolean,
-    canBlock: boolean,
-    challenged: boolean,
-    challengeSucceeded: boolean,
-    challengingPlayerId: string | undefined,
-}
+import initializeAction, { Action } from './initializeAction';
 
 export interface CoupGamePublic {
     id: string,
@@ -114,40 +101,53 @@ class CoupGame {
             return false;
         }
 
-        const playerName = this.players.getOne(playerId).name;
-        let targetName;
-        if (targetId) {
-            targetName = this.players.getOne(targetId).name;
-        }
-
         // Set action
-        this.currentAction = {
-            isBlock: false,
+        this.currentAction = initializeAction(
+            false,
+            this.players,
             actionType,
+            playerId,
             claimedCard,
-            actingPlayerId: playerId,
-            actingPlayerName: playerName,
-            targetPlayerId: targetId,
-            targetPlayerName: targetName,
-            canChallenge: true,
-            challenged: false,
-            challengeSucceeded: false,
-            challengingPlayerId: undefined,
-            canBlock: true,
-        };
+            targetId,
+        );
 
         return true;
     }
 
-    challenge(challengingPlayerId: string): ChallengeOutcome | undefined {
-        if (this.currentAction === undefined) {
-            // The player whose turn it is has not yet attempted an action
+    accept(actionId: string, playerId: string): boolean {
+        if (this.currentAction === undefined
+            || !this.currentAction.canChallenge
+            || this.currentAction.id !== actionId) {
+            // Trying to accept a stale action
+            return false;
+        }
+        if (this.currentAction.acceptedBy[playerId]) {
+            // Already accepted the action
+            return false;
+        }
+        this.currentAction.acceptedBy[playerId] = true;
+        return true;
+    }
+
+    challenge(
+        actionId: string,
+        isBlock: boolean,
+        challengingPlayerId: string,
+    ): ChallengeOutcome | undefined {
+        const challengedActionKey = isBlock ? 'currentBlock' : 'currentAction';
+        const challengedAction = this[challengedActionKey];
+
+        if (!challengedAction
+            || !challengedAction.canChallenge
+            || !challengedAction.claimedCard
+            || challengedAction.id !== actionId) {
+            // Trying to challenge a stale action or an action that
+            // cannot be challenged (income / foreign aid / coup)
             return undefined;
         }
 
-        if (!this.currentAction.canChallenge || this.currentAction.claimedCard === undefined) {
-            // Can't challenge action (someone else already challenged it,
-            // or it's income / foreign aid)
+        if (challengedAction.acceptedBy[challengingPlayerId]) {
+            // Can't challenge the action after accepting it
             return undefined;
         }
 
@@ -156,32 +156,33 @@ class CoupGame {
             canChallenge: false,
             challenged: true,
             challengingPlayerId,
+            challengeLoserMustDiscard: true,
+            isComplete: true,
         };
 
         // Check if the challenged player is bluffing
-        const { claimedCard, actingPlayerId } = this.currentAction;
+        const { claimedCard, actingPlayerId } = challengedAction;
         const actingPlayer = this.players.getOne(actingPlayerId);
         const actingPlayerCard = actingPlayer.searchForCardOfType(claimedCard);
 
         if (actingPlayerCard === undefined) {
             // Challenger was successful
-            this.currentAction = {
-                ...this.currentAction,
+            this[challengedActionKey] = {
+                ...challengedAction,
                 ...challengeEffects,
                 challengeSucceeded: true,
             };
 
             return {
                 success: true,
-                vindicatedPlayerHand: undefined,
                 winnerId: challengingPlayerId,
                 loserId: actingPlayerId,
             };
         }
 
         // Else - challenger was unsuccessful
-        this.currentAction = {
-            ...this.currentAction,
+        this[challengedActionKey] = {
+            ...challengedAction,
             ...challengeEffects,
             challengeSucceeded: false,
         };
@@ -194,47 +195,43 @@ class CoupGame {
 
         return {
             success: false,
-            vindicatedPlayerHand: actingPlayer.cards,
             winnerId: actingPlayerId,
             loserId: challengingPlayerId,
         };
     }
 
     block(
+        actionId: string,
         playerId: string,
         blockActionType: BlockActionType,
         claimedCard: CardType,
     ): boolean {
-        if (this.currentAction === undefined) {
-            // There is no action to block
+        if (this.currentAction === undefined
+            || !this.currentAction.canBlock
+            || this.currentAction.id !== actionId) {
+            // Trying to block a stale action or an action that
+            // cannot be blocked (income / coup)
             return false;
         }
 
         // TODO: add logic here to see if it can be blocked - if player IS the target,
         // OR it's a target-less action that can be blocked, e.g., foreign aid
 
-        // It's now too late for players to challenge the initial action
+        // It's now too late for players to challenge / block the initial action
         this.currentAction = {
             ...this.currentAction,
             canChallenge: false,
-        };
-
-        const playerName = this.players.getOne(playerId).name;
-
-        this.currentBlock = {
-            isBlock: true,
-            actionType: blockActionType,
-            actingPlayerId: playerId,
-            actingPlayerName: playerName,
-            claimedCard,
-            targetPlayerId: this.currentAction.actingPlayerId,
-            targetPlayerName: this.currentAction.actingPlayerName,
-            canChallenge: true,
-            challenged: false,
-            challengeSucceeded: false,
-            challengingPlayerId: undefined,
             canBlock: false,
         };
+
+        this.currentBlock = initializeAction(
+            true,
+            this.players,
+            blockActionType,
+            playerId,
+            claimedCard,
+            this.currentAction.actingPlayerId,
+        );
 
         return true;
     }

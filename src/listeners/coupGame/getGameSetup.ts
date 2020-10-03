@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import CoupGames from '../../utils/classes/Game/CoupGames';
-import { Action } from '../../utils/classes/Game/CoupGame';
+import { Action } from '../../utils/classes/Game/initializeAction';
 import { CoupPlayerPrivate, CoupPlayerPublic } from '../../utils/classes/Player/CoupPlayer';
 
 interface GetGameSetupRequest {
@@ -37,6 +37,7 @@ const getGameSetup = (socket: Socket, activeGames: CoupGames) => (
         };
         socket.emit('gameUpdate', gameUpdate);
         socket.emit('playerUpdate', playerUpdate);
+        socket.join(playerId); // Each player will be in a unique room alone for private messages
     }
 );
 

@@ -19,12 +19,12 @@ const joinRoom = (io: Server, socket: Socket, lobby: Rooms) => (
         // Notify joiner of successful join
         socket.emit('joinGameRoomResponse', { room: room.getPublic(), player });
 
-        // Notify lobby and room room that player joined
-        io.to('roomLobby').emit('rooms', lobby.getAllPublic());
+        // Notify lobby and game room that player joined
+        io.to('gameLobby').emit('rooms', lobby.getAllPublic());
         io.to(roomId).emit('updateRoom', { players: room.players.getAllPublic() });
 
         // Subscribe user to room room, leave lobby
-        socket.leave('roomLobby');
+        socket.leave('gameLobby');
         socket.join(roomId);
     }
 );

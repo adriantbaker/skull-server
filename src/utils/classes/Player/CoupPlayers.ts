@@ -71,6 +71,15 @@ class CoupPlayers {
         return Object.keys(this.players);
     }
 
+    /**
+     *
+     * @param playerId Player ID that will be excluded
+     */
+    getOpponentIds(playerId: string): Array<string> {
+        return Object.keys(this.players)
+            .filter((key) => key !== playerId);
+    }
+
     getAllPublic(): Array<CoupPlayerPublic> {
         return Object.values(this.players).map((player) => player.getPublic());
     }
