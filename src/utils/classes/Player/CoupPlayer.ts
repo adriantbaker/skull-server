@@ -1,3 +1,4 @@
+import CoupCard, { CardType } from '../Card/CoupCard';
 import { Hand } from '../Deck/CoupDeck';
 
 export interface CoupPlayerPrivate {
@@ -41,8 +42,28 @@ class CoupPlayer {
         this.cards.push(...cards);
     }
 
-    removeCards(cardIds: Array<number>): void {
-        this.cards = this.cards.filter((card) => !cardIds.includes(card.id));
+    /**
+     *
+     * @param cardId ID of card to be removed
+     *
+     * @description Only use this function if you know the card exists in the player's hand
+     */
+    removeCard(cardId: number): CoupCard {
+        return this.removeCards([cardId])[0];
+    }
+
+    removeCards(cardIds: Array<number>): Array<CoupCard> {
+        const remainingCards: CoupCard[] = [];
+        const removedCards: CoupCard[] = [];
+        this.cards.forEach((card) => {
+            if (cardIds.includes(card.id)) {
+                removedCards.push(card);
+            } else {
+                remainingCards.push(card);
+            }
+        });
+        this.cards = remainingCards;
+        return removedCards;
     }
 
     addCoins(numCoins: number): void {
@@ -81,6 +102,16 @@ class CoupPlayer {
             numCards: this.cards.length,
             numCoins: this.numCoins,
         };
+    }
+
+    searchForCardOfType(cardType: CardType): CoupCard | undefined {
+        for (let i = 0; i < this.cards.length; i++) {
+            const card = this.cards[i];
+            if (card.type === cardType) {
+                return card;
+            }
+        }
+        return undefined;
     }
 }
 

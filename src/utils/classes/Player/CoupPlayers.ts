@@ -67,6 +67,10 @@ class CoupPlayers {
         return Object.values(this.players);
     }
 
+    getAllIds(): Array<string> {
+        return Object.keys(this.players);
+    }
+
     getAllPublic(): Array<CoupPlayerPublic> {
         return Object.values(this.players).map((player) => player.getPublic());
     }

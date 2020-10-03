@@ -18,6 +18,10 @@ class CoupDeck {
         this.cardsInDiscard = [];
     }
 
+    drawOne(): CoupCard {
+        return this.draw(1)[0];
+    }
+
     draw(numCards = 1): Hand {
         const numCardsToDraw = numCards;
         const numCardsInDeck = this.cardsInDeck.length;

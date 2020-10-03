@@ -6,8 +6,9 @@ import joinRoom from './listeners/lobby/joinRoom';
 import startGame from './listeners/lobby/startGame';
 import joinLobby from './listeners/lobby/joinLobby';
 import leaveLobby from './listeners/lobby/leaveLobby';
-import getFirstHands from './listeners/coupGame/getFirstHands';
+import getFirstHands from './listeners/coupGame/getGameSetup';
 import Rooms from './utils/classes/Room/Rooms';
+import tryAction from './listeners/coupGame/tryAction';
 
 // App setup
 const app = express();
@@ -37,7 +38,8 @@ io.on('connection', (socket) => {
     socket.on('startGame', startGame(io, lobby, activeGames));
 
     // Game interactions
-    socket.on('getFirstHands', getFirstHands(socket, activeGames));
+    socket.on('getGameSetup', getFirstHands(socket, activeGames));
+    socket.on('tryAction', tryAction(io, activeGames));
 
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
