@@ -6,7 +6,11 @@ import { GameUpdate } from './getGameSetup';
 export enum ActionType {
     Income = 'income',
     ForeignAid = 'foreignAid',
-    Coup = 'coup'
+    Coup = 'coup',
+    Tax = 'tax',
+    Assassinate = 'assassinate',
+    Steal = 'steal',
+    Exchange = 'exchange'
 }
 
 interface tryActionRequest {
