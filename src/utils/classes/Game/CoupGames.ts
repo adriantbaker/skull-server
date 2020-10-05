@@ -1,4 +1,4 @@
-import CoupGame, { CoupGamePublic } from './CoupGame';
+import CoupGame, { CoupGamePublic } from './CoupGame/CoupGame';
 
 class CoupGames {
     games: { [key: string]: CoupGame }

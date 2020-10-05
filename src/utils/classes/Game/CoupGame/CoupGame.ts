@@ -1,12 +1,20 @@
-import { ActionType } from '../../../listeners/coupGame/tryAction';
-import { BlockActionType } from '../../../listeners/coupGame/tryBlock';
-import { ChallengeOutcome } from '../../interfaces/signals';
-import CoupCard, { CardType } from '../Card/CoupCard';
-import Deck from '../Deck/CoupDeck';
-import CoupPlayer, { CoupPlayerPublic } from '../Player/CoupPlayer';
-import CoupPlayers from '../Player/CoupPlayers';
-import deckCardTypes from './deckCardTypes';
-import initializeAction, { Action } from './initializeAction';
+import { ActionType } from '../../../../listeners/coupGame/tryAction';
+import { BlockActionType } from '../../../../listeners/coupGame/tryBlock';
+import { ChallengeOutcome } from '../../../interfaces/signals';
+import CoupCard, { CardType } from '../../Card/CoupCard';
+import Deck from '../../Deck/CoupDeck';
+import CoupPlayer, { CoupPlayerPublic } from '../../Player/CoupPlayer';
+import CoupPlayers from '../../Player/CoupPlayers';
+import deckCardTypes from '../deckCardTypes';
+import initializeAction, { Action } from './initializers/initializeAction';
+import handleAccept from './methodHelpers/handleAccept';
+import handleChallenge from './methodHelpers/handleChallenge';
+
+export interface Turn {
+    number: number,
+    playerId: string,
+    playerName: string
+}
 
 export interface CoupGamePublic {
     id: string,
@@ -14,7 +22,7 @@ export interface CoupGamePublic {
     name: string,
     players: Array<CoupPlayerPublic>,
     started: boolean,
-    currentTurn: number,
+    currentTurn: Turn,
     currentAction: Action | undefined,
     currentBlock: Action | undefined,
     deck: Deck
@@ -27,7 +35,7 @@ class CoupGame {
     players: CoupPlayers
     numPlayers: number
     started: boolean
-    currentTurn: number
+    currentTurn: Turn
     currentAction: Action | undefined
     currentBlock: Action | undefined
     deck: Deck
@@ -47,7 +55,11 @@ class CoupGame {
         this.players = players;
         this.numPlayers = players.getNumPlayers();
         this.started = false;
-        this.currentTurn = -1;
+        this.currentTurn = {
+            number: -1,
+            playerId: '',
+            playerName: '',
+        };
         this.currentAction = undefined;
         this.currentBlock = undefined;
 
@@ -87,7 +99,14 @@ class CoupGame {
     }
 
     nextTurn(): void {
-        this.currentTurn = (this.currentTurn + 1) % this.numPlayers;
+        const nextTurnNumber = (this.currentTurn.number + 1) % this.numPlayers;
+        const nextTurnPlayerId = this.players.turnOrder[nextTurnNumber];
+        const nextTurnPlayerName = this.players.getOne(nextTurnPlayerId).name;
+        this.currentTurn = {
+            number: nextTurnNumber,
+            playerId: nextTurnPlayerId,
+            playerName: nextTurnPlayerName,
+        };
     }
 
     attempt(
@@ -114,18 +133,19 @@ class CoupGame {
         return true;
     }
 
-    accept(actionId: string, playerId: string): boolean {
-        if (this.currentAction === undefined
-            || !this.currentAction.canChallenge
-            || this.currentAction.id !== actionId) {
-            // Trying to accept a stale action
+    accept(actionId: string, isBlock: boolean, playerId: string): boolean {
+        const action = isBlock ? this.currentBlock : this.currentAction;
+        const updatedAction = handleAccept(actionId, action, playerId);
+        if (!updatedAction) {
+            // The player was unable to accept the action
             return false;
         }
-        if (this.currentAction.acceptedBy[playerId]) {
-            // Already accepted the action
-            return false;
+        // The action must be updated
+        if (isBlock) {
+            this.currentBlock = updatedAction;
+        } else {
+            this.currentAction = updatedAction;
         }
-        this.currentAction.acceptedBy[playerId] = true;
         return true;
     }
 
@@ -134,69 +154,27 @@ class CoupGame {
         isBlock: boolean,
         challengingPlayerId: string,
     ): ChallengeOutcome | undefined {
-        const challengedActionKey = isBlock ? 'currentBlock' : 'currentAction';
-        const challengedAction = this[challengedActionKey];
-
-        if (!challengedAction
-            || !challengedAction.canChallenge
-            || !challengedAction.claimedCard
-            || challengedAction.id !== actionId) {
-            // Trying to challenge a stale action or an action that
-            // cannot be challenged (income / foreign aid / coup)
+        const action = isBlock ? this.currentBlock : this.currentAction;
+        const updatedAction = handleChallenge(
+            actionId, action, challengingPlayerId, this.players, this.deck,
+        );
+        if (!updatedAction) {
+            // The player was unable to challenge the action
             return undefined;
         }
-
-        if (challengedAction.acceptedBy[challengingPlayerId]) {
-            // Can't challenge the action after accepting it
-            return undefined;
+        // The action must be updated
+        if (isBlock) {
+            this.currentBlock = updatedAction;
+        } else {
+            this.currentAction = updatedAction;
         }
 
-        // The challenge is valid - this means no one else can challenge
-        const challengeEffects = {
-            canChallenge: false,
-            challenged: true,
-            challengingPlayerId,
-            challengeLoserMustDiscard: true,
-            isComplete: true,
-        };
-
-        // Check if the challenged player is bluffing
-        const { claimedCard, actingPlayerId } = challengedAction;
-        const actingPlayer = this.players.getOne(actingPlayerId);
-        const actingPlayerCard = actingPlayer.searchForCardOfType(claimedCard);
-
-        if (actingPlayerCard === undefined) {
-            // Challenger was successful
-            this[challengedActionKey] = {
-                ...challengedAction,
-                ...challengeEffects,
-                challengeSucceeded: true,
-            };
-
-            return {
-                success: true,
-                winnerId: challengingPlayerId,
-                loserId: actingPlayerId,
-            };
-        }
-
-        // Else - challenger was unsuccessful
-        this[challengedActionKey] = {
-            ...challengedAction,
-            ...challengeEffects,
-            challengeSucceeded: false,
-        };
-
-        // Player who was wrongly challenged trades their card for a new one
-        const removedCard = actingPlayer.removeCard(actingPlayerCard.id);
-        this.deck.insert([removedCard]);
-        const newCard = this.deck.drawOne();
-        actingPlayer.addCards([newCard]);
+        const { actingPlayerId, challengeSucceeded: success } = updatedAction;
 
         return {
-            success: false,
-            winnerId: actingPlayerId,
-            loserId: challengingPlayerId,
+            success,
+            winnerId: success ? challengingPlayerId : actingPlayerId,
+            loserId: success ? actingPlayerId : challengingPlayerId,
         };
     }
 

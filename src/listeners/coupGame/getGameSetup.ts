@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io';
+import { Turn } from '../../utils/classes/Game/CoupGame/CoupGame';
+import { Action } from '../../utils/classes/Game/CoupGame/initializers/initializeAction';
 import CoupGames from '../../utils/classes/Game/CoupGames';
-import { Action } from '../../utils/classes/Game/initializeAction';
 import { CoupPlayerPrivate, CoupPlayerPublic } from '../../utils/classes/Player/CoupPlayer';
 
 interface GetGameSetupRequest {
@@ -9,7 +10,7 @@ interface GetGameSetupRequest {
 }
 
 export interface GameUpdate {
-    currentTurn: number | null,
+    currentTurn: Turn | null,
     currentAction: Action | null,
     currentBlock: Action | null
 }

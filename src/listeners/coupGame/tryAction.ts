@@ -25,23 +25,19 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
     } = request;
     const game = activeGames.getOne(gameId);
 
-    if (actionType === ActionType.Income) {
-        // Special case - no one can challenge income
-    } else {
-        const tryReceived = game.attempt(actionType, playerId, claimedCard, targetId);
+    const tryReceived = game.attempt(actionType, playerId, claimedCard, targetId);
 
-        if (tryReceived && game.currentAction) {
-            // Notify players that current player is attempting an action
-            const gameUpdate: GameUpdate = {
-                currentTurn: null,
-                currentAction: game.currentAction,
-                currentBlock: null,
-            };
-            io.to(gameId).emit('gameUpdate', gameUpdate);
-        }
-
-        // TODO: handle if not accepted
+    if (tryReceived && game.currentAction) {
+        // Notify players that current player is attempting an action
+        const gameUpdate: GameUpdate = {
+            currentTurn: null,
+            currentAction: game.currentAction,
+            currentBlock: null,
+        };
+        io.to(gameId).emit('gameUpdate', gameUpdate);
     }
+
+    // TODO: handle if not accepted
 };
 
 export default tryAction;

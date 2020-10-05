@@ -1,4 +1,4 @@
-import CoupPlayers from '../Player/CoupPlayers';
+import CoupPlayers from '../../../Player/CoupPlayers';
 
 export type AcceptedBy = { [key: string]: boolean }
 

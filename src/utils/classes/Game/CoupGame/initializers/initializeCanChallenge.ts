@@ -1,5 +1,5 @@
-import { ActionType } from '../../../listeners/coupGame/tryAction';
-import { BlockActionType } from '../../../listeners/coupGame/tryBlock';
+import { ActionType } from '../../../../../listeners/coupGame/tryAction';
+import { BlockActionType } from '../../../../../listeners/coupGame/tryBlock';
 
 const initializeCanChallenge = (actionType: ActionType | BlockActionType): boolean => {
     switch (actionType) {

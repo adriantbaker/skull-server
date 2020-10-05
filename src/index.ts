@@ -11,6 +11,7 @@ import Rooms from './utils/classes/Room/Rooms';
 import tryAction from './listeners/coupGame/tryAction';
 import challengeAction from './listeners/coupGame/challengeAction';
 import tryBlock from './listeners/coupGame/tryBlock';
+import acceptAction from './listeners/coupGame/acceptAction';
 
 // App setup
 const app = express();
@@ -43,6 +44,7 @@ io.on('connection', (socket) => {
     socket.on('getGameSetup', getFirstHands(socket, activeGames));
     socket.on('tryAction', tryAction(io, activeGames));
     socket.on('challengeAction', challengeAction(io, activeGames));
+    socket.on('acceptAction', acceptAction(io, activeGames));
     socket.on('tryBlock', tryBlock(io, activeGames));
 
     socket.on('disconnect', () => {

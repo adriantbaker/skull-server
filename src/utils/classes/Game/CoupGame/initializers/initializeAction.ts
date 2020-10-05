@@ -1,7 +1,7 @@
-import { ActionType } from '../../../listeners/coupGame/tryAction';
-import { BlockActionType } from '../../../listeners/coupGame/tryBlock';
-import { CardType } from '../Card/CoupCard';
-import CoupPlayers from '../Player/CoupPlayers';
+import { ActionType } from '../../../../../listeners/coupGame/tryAction';
+import { BlockActionType } from '../../../../../listeners/coupGame/tryBlock';
+import { CardType } from '../../../Card/CoupCard';
+import CoupPlayers from '../../../Player/CoupPlayers';
 import initializeAcceptedBy, { AcceptedBy } from './initializeAcceptedBy';
 import initializeCanBlock from './initializeCanBlock';
 import initializeCanChallenge from './initializeCanChallenge';
@@ -35,7 +35,7 @@ const initializeAction = (
 ): Action => ({
     id: actionType + Date.now(),
     isBlock,
-    isComplete: false,
+    isComplete: actionType === ActionType.Income,
     actionType,
     claimedCard,
     actingPlayerId: playerId,

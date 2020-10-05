@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import CoupGame from '../../utils/classes/Game/CoupGame';
+import CoupGame from '../../utils/classes/Game/CoupGame/CoupGame';
 import CoupGames from '../../utils/classes/Game/CoupGames';
 import Rooms from '../../utils/classes/Room/Rooms';
 
