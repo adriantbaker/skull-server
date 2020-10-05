@@ -1,4 +1,5 @@
 import { Action } from '../initializers/initializeAction';
+import isAcceptedByAll from './isAcceptedByAll';
 
 const handleAccept = (
     actionId: string,
@@ -6,11 +7,10 @@ const handleAccept = (
     playerId: string,
 ): Action | undefined => {
     if (!currentActionOrBlock
-            || !currentActionOrBlock.canChallenge
-            || !currentActionOrBlock.claimedCard
+            || !(currentActionOrBlock.canChallenge || currentActionOrBlock.canBlock)
             || currentActionOrBlock.id !== actionId) {
         // Trying to accept a stale action or an action that
-        // does not need to be accepted (income / foreign aid / coup)
+        // does not need to be accepted (income / coup)
         return undefined;
     }
     if (currentActionOrBlock.acceptedBy[playerId]) {
@@ -24,7 +24,7 @@ const handleAccept = (
         [playerId]: true,
     };
 
-    const acceptedByAll = Object.values(newAcceptedBy).every((val) => val === true);
+    const acceptedByAll = isAcceptedByAll(newAcceptedBy);
 
     const newActionOrBlock = {
         ...currentActionOrBlock,

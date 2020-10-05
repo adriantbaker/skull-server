@@ -9,6 +9,8 @@ import deckCardTypes from '../deckCardTypes';
 import initializeAction, { Action } from './initializers/initializeAction';
 import handleAccept from './methodHelpers/handleAccept';
 import handleChallenge from './methodHelpers/handleChallenge';
+import handleExpireAction from './methodHelpers/handleExpireAction';
+import isAcceptedByAll from './methodHelpers/isAcceptedByAll';
 
 export interface Turn {
     number: number,
@@ -210,6 +212,30 @@ class CoupGame {
             claimedCard,
             this.currentAction.actingPlayerId,
         );
+
+        return true;
+    }
+
+    expireAction(actionId: string, isBlock: boolean): boolean {
+        const action = isBlock ? this.currentBlock : this.currentAction;
+        if (!action
+            || action.id !== actionId) {
+            // Stale action
+            return false;
+        }
+        const { acceptedBy } = action;
+        if (isAcceptedByAll(acceptedBy)) {
+            // Everyone already accepted, stale action
+            return false;
+        }
+
+        // Action is still active, we expire it
+        const expiredAction = handleExpireAction(action);
+        if (isBlock) {
+            this.currentBlock = expiredAction;
+        } else {
+            this.currentAction = expiredAction;
+        }
 
         return true;
     }

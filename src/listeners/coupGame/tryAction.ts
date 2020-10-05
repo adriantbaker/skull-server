@@ -1,7 +1,9 @@
 import { Server } from 'socket.io';
 import { CardType } from '../../utils/classes/Card/CoupCard';
 import CoupGames from '../../utils/classes/Game/CoupGames';
+import { INITIAL_ACTION_TIME_LIMIT } from '../../utils/consts/timeLimits';
 import { GameUpdate } from './getGameSetup';
+import expireAction from './helpers/expireAction';
 
 export enum ActionType {
     Income = 'income',
@@ -38,6 +40,17 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
             currentAction: game.currentAction,
             currentBlock: null,
         };
+
+        const { canChallenge, canBlock } = game.currentAction;
+
+        if (canChallenge || canBlock) {
+            // Set a time limit for people to challenge / block action
+            setTimeout(
+                expireAction(io, game, game.currentAction),
+                INITIAL_ACTION_TIME_LIMIT,
+            );
+        }
+
         io.to(gameId).emit('gameUpdate', gameUpdate);
     }
 
