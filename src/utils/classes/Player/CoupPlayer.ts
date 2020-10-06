@@ -7,6 +7,7 @@ export interface CoupPlayerPrivate {
     isOwner: boolean
     turnNumber: number
     cards: Hand
+    exchangeCards: Hand
     numCoins: number
 }
 
@@ -26,6 +27,7 @@ class CoupPlayer {
     isOwner: boolean
     turnNumber: number
     cards: Hand
+    exchangeCards: Hand
     numCoins: number
 
     constructor(socketId: string, name: string, isOwner = false) {
@@ -36,10 +38,15 @@ class CoupPlayer {
         this.turnNumber = -1;
         this.numCoins = 2;
         this.cards = [];
+        this.exchangeCards = [];
     }
 
     addCards(cards: Hand): void {
         this.cards.push(...cards);
+    }
+
+    addExchangeCards(cards: Hand): void {
+        this.exchangeCards.push(...cards);
     }
 
     /**
@@ -88,6 +95,7 @@ class CoupPlayer {
             isOwner: this.isOwner,
             turnNumber: this.turnNumber,
             cards: this.cards,
+            exchangeCards: this.exchangeCards,
             numCoins: this.numCoins,
         };
     }

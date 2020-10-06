@@ -6,7 +6,9 @@ import expireAction from './helpers/expireAction';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 
 export enum BlockActionType {
-    BlockForeignAid = 'blockForeignAid'
+    BlockForeignAid = 'blockForeignAid',
+    BlockAssassinate = 'blockAssassinate',
+    BlockSteal = 'blockSteal'
 }
 
 interface tryBlockRequest {

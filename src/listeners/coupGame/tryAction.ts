@@ -4,6 +4,7 @@ import CoupGames from '../../utils/classes/Game/CoupGames';
 import { INITIAL_ACTION_TIME_LIMIT } from '../../utils/consts/timeLimits';
 import expireAction from './helpers/expireAction';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
+import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
 
 export enum ActionType {
     Income = 'income',
@@ -31,22 +32,35 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
     } = request;
     const game = activeGames.getOne(gameId);
 
-    const tryReceived = game.attempt(actionType, playerId, claimedCard, targetId);
+    const { received, implemented } = game.attempt(actionType, playerId, claimedCard, targetId);
 
-    if (tryReceived && game.currentAction) {
-        // Notify players that current player is attempting an action
+    if (received) {
+        // Notify players that current player attempted an action
 
-        const { canChallenge, canBlock } = game.currentAction;
+        if (implemented) {
+            // The action was immediately implemented (income)
+            sendGameUpdateToAll(game, io);
+            sendPlayerUpdateToAll(game, io);
+        } else {
+            // The action is not yet implemented, so no player update is needed
 
-        if (canChallenge || canBlock) {
-            // Set a time limit for people to challenge / block action
-            setTimeout(
-                expireAction(io, game, game.currentAction),
-                INITIAL_ACTION_TIME_LIMIT,
-            );
+            if (!game.currentAction) {
+                console.log('Something went wrong');
+                return;
+            }
+
+            const { canChallenge, canBlock } = game.currentAction;
+
+            if (canChallenge || canBlock) {
+                // Set a time limit for people to challenge / block action
+                setTimeout(
+                    expireAction(io, game, game.currentAction),
+                    INITIAL_ACTION_TIME_LIMIT,
+                );
+            }
+
+            sendGameUpdateToAll(game, io);
         }
-
-        sendGameUpdateToAll(game, io);
     }
 
     // TODO: handle if not accepted

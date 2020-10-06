@@ -21,8 +21,11 @@ export interface Action {
     canBlock: boolean,
     challenged: boolean,
     challengeSucceeded: boolean,
-    challengeLoserMustDiscard: boolean,
+    // challengeLoserMustDiscard: boolean,
     challengingPlayerId: string | undefined,
+    pendingChallengeLoserDiscard: boolean,
+    pendingTargetDiscard: boolean,
+    pendingActorExchange: boolean,
 }
 
 const initializeAction = (
@@ -46,9 +49,11 @@ const initializeAction = (
     canChallenge: initializeCanChallenge(actionType),
     challenged: false,
     challengeSucceeded: false,
-    challengeLoserMustDiscard: false,
     challengingPlayerId: undefined,
     canBlock: isBlock ? false : initializeCanBlock(actionType),
+    pendingActorExchange: actionType === ActionType.Exchange,
+    pendingChallengeLoserDiscard: false,
+    pendingTargetDiscard: false,
 });
 
 export default initializeAction;

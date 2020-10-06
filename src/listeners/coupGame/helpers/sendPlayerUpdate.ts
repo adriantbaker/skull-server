@@ -22,10 +22,10 @@ const getPlayerUpdate = (playerId: string, players: CoupPlayers): PlayerUpdate =
 export const sendPlayerUpdateBySocket = (
     playerId: string,
     game: CoupGame,
-    socket: Socket,
+    playerSocket: Socket,
 ): void => {
     const playerUpdate = getPlayerUpdate(playerId, game.players);
-    socket.emit('playerUpdate', playerUpdate);
+    playerSocket.emit('playerUpdate', playerUpdate);
 };
 
 export const sendPlayerUpdateByPrivateRoom = (
@@ -35,4 +35,14 @@ export const sendPlayerUpdateByPrivateRoom = (
 ): void => {
     const playerUpdate = getPlayerUpdate(playerId, game.players);
     io.to(playerId).emit('playerUpdate', playerUpdate);
+};
+
+export const sendPlayerUpdateToAll = (
+    game: CoupGame,
+    io: Server,
+): void => {
+    const playerIds = game.players.getAllIds();
+    playerIds.forEach((playerId) => {
+        sendPlayerUpdateByPrivateRoom(playerId, game, io);
+    });
 };

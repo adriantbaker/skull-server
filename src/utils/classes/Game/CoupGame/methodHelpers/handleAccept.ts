@@ -1,3 +1,5 @@
+import targetActionNeeded from '../../../../../listeners/coupGame/helpers/targetActionNeeded';
+import { ActionType } from '../../../../../listeners/coupGame/tryAction';
 import { Action } from '../initializers/initializeAction';
 import isAcceptedByAll from './isAcceptedByAll';
 
@@ -26,11 +28,14 @@ const handleAccept = (
 
     const acceptedByAll = isAcceptedByAll(newAcceptedBy);
 
+    const { actionType } = currentActionOrBlock;
+
     const newActionOrBlock = {
         ...currentActionOrBlock,
         acceptedBy: newAcceptedBy,
         canChallenge: !acceptedByAll,
         canBlock: !acceptedByAll,
+        pendingTargetDiscard: targetActionNeeded(actionType),
     };
 
     return newActionOrBlock;

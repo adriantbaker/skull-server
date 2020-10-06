@@ -28,7 +28,7 @@ const handleChallenge = (
         canChallenge: false,
         challenged: true,
         challengingPlayerId,
-        challengeLoserMustDiscard: true,
+        pendingChallengeLoserDiscard: true,
     };
 
     // Check if the challenged player is bluffing

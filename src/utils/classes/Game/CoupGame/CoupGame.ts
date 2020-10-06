@@ -1,32 +1,38 @@
 import { ActionType } from '../../../../listeners/coupGame/tryAction';
 import { BlockActionType } from '../../../../listeners/coupGame/tryBlock';
-import { ActionOutcome, ChallengeOutcome } from '../../../interfaces/signals';
+import { ChallengeOutcome } from '../../../interfaces/signals';
 import CoupCard, { CardType } from '../../Card/CoupCard';
 import Deck, { Hand } from '../../Deck/CoupDeck';
 import CoupPlayer, { CoupPlayerPublic } from '../../Player/CoupPlayer';
 import CoupPlayers from '../../Player/CoupPlayers';
 import deckCardTypes from '../deckCardTypes';
 import initializeAction, { Action } from './initializers/initializeAction';
+import canImplementAction from './methodHelpers/canImplementAction';
 import handleAccept from './methodHelpers/handleAccept';
 import handleChallenge from './methodHelpers/handleChallenge';
 import handleExpireAction from './methodHelpers/handleExpireAction';
 import isAcceptedByAll from './methodHelpers/isAcceptedByAll';
 
+export interface AttemptOutcome {
+    received: boolean
+    implemented: boolean
+}
+
 export interface Turn {
-    number: number,
-    playerId: string,
+    number: number
+    playerId: string
     playerName: string
 }
 
 export interface CoupGamePublic {
     id: string,
-    owner: CoupPlayerPublic,
-    name: string,
-    players: Array<CoupPlayerPublic>,
-    started: boolean,
-    currentTurn: Turn,
-    currentAction: Action | undefined,
-    currentBlock: Action | undefined,
+    owner: CoupPlayerPublic
+    name: string
+    players: Array<CoupPlayerPublic>
+    started: boolean
+    currentTurn: Turn
+    currentAction: Action | undefined
+    currentBlock: Action | undefined
     deck: Deck
 }
 
@@ -109,6 +115,8 @@ class CoupGame {
             playerId: nextTurnPlayerId,
             playerName: nextTurnPlayerName,
         };
+        this.currentAction = undefined;
+        this.currentBlock = undefined;
     }
 
     attempt(
@@ -116,10 +124,13 @@ class CoupGame {
         playerId: string,
         claimedCard?: CardType,
         targetId?: string,
-    ): boolean {
+    ): AttemptOutcome {
         if (this.currentAction !== undefined) {
             // An action has already been declared
-            return false;
+            return {
+                received: false,
+                implemented: false,
+            };
         }
 
         // Set action
@@ -132,7 +143,12 @@ class CoupGame {
             targetId,
         );
 
-        return true;
+        const implemented = this.tryToImplementAction(false);
+
+        return {
+            received: true,
+            implemented,
+        };
     }
 
     accept(actionId: string, isBlock: boolean, playerId: string): boolean {
@@ -149,10 +165,7 @@ class CoupGame {
             this.currentAction = updatedAction;
         }
 
-        if (!updatedAction.canChallenge && !updatedAction.canBlock) {
-            // Everyone accepted the action
-            this.nextTurn();
-        }
+        this.tryToImplementAction(isBlock);
 
         return true;
     }
@@ -246,7 +259,19 @@ class CoupGame {
         return true;
     }
 
-    implementAction(actionType: ActionType, playerId: string, targetId?: string): ActionOutcome {
+    tryToImplementAction(
+        isBlock: boolean,
+    ): boolean {
+        const actionToImplement = isBlock ? this.currentBlock : this.currentAction;
+        if (!actionToImplement || !canImplementAction(actionToImplement)) {
+            return false;
+        }
+        const {
+            actionType,
+            actingPlayerId: playerId,
+            targetPlayerId: targetId,
+        } = actionToImplement;
+
         const player = this.players.getOne(playerId);
         let targetMustDiscard = false;
         let drawnPlayerCards: Hand = [];
@@ -282,14 +307,16 @@ class CoupGame {
                 break;
             case ActionType.Exchange:
                 drawnPlayerCards = this.deck.draw(2);
+                player.addExchangeCards(drawnPlayerCards);
                 break;
             default:
                 break;
         }
-        return {
-            targetMustDiscard,
-            drawnPlayerCards,
-        };
+
+        // TODO: Handle Blocks
+
+        this.nextTurn();
+        return true;
     }
 
     /** Getters */
