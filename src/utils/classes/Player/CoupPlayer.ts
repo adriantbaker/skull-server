@@ -70,8 +70,10 @@ class CoupPlayer {
         this.numCoins += numCoins;
     }
 
-    removeCoins(numCoins: number): void {
-        this.numCoins = Math.max(this.numCoins - numCoins, 0);
+    removeCoins(numCoins: number): number {
+        const numCoinsRemoved = Math.min(numCoins, this.numCoins);
+        this.numCoins -= numCoinsRemoved;
+        return numCoinsRemoved;
     }
 
     /** Getters */

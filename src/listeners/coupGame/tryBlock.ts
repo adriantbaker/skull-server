@@ -2,8 +2,8 @@ import { Server } from 'socket.io';
 import { CardType } from '../../utils/classes/Card/CoupCard';
 import CoupGames from '../../utils/classes/Game/CoupGames';
 import { COUNTER_ACTION_TIME_LIMIT } from '../../utils/consts/timeLimits';
-import { GameUpdate } from './getGameSetup';
 import expireAction from './helpers/expireAction';
+import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 
 export enum BlockActionType {
     BlockForeignAid = 'blockForeignAid'
@@ -29,19 +29,14 @@ const tryBlock = (io: Server, activeGames: CoupGames) => (request: tryBlockReque
     const blockReceived = game.block(actionId, playerId, actionType, claimedCard);
 
     if (blockReceived && game.currentAction && game.currentBlock) {
-        // Notify players that someone has blocked the action
-        const gameUpdate: GameUpdate = {
-            currentTurn: null,
-            currentAction: game.currentAction,
-            currentBlock: game.currentBlock,
-        };
-
+        // Set time limit for players to respond to action
         setTimeout(
             expireAction(io, game, game.currentBlock),
             COUNTER_ACTION_TIME_LIMIT,
         );
 
-        io.to(gameId).emit('gameUpdate', gameUpdate);
+        // Notify players that someone has blocked the action
+        sendGameUpdateToAll(game, io);
     }
 };
 

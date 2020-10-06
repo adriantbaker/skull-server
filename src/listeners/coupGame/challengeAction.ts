@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import CoupGames from '../../utils/classes/Game/CoupGames';
-import { GameUpdate, PlayerUpdate } from './getGameSetup';
+import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
+import { sendPlayerUpdateByPrivateRoom } from './helpers/sendPlayerUpdate';
 
 interface challengeActionRequest {
     actionId: string,
@@ -13,9 +14,6 @@ const challengeAction = (io: Server, activeGames: CoupGames) => (
     (request: challengeActionRequest): void => {
         // TODO: validate request
 
-        console.log('Challenge action...');
-        console.log(request);
-
         const {
             actionId, playerId, gameId, isBlock,
         } = request;
@@ -24,23 +22,13 @@ const challengeAction = (io: Server, activeGames: CoupGames) => (
         const challengeOutcome = game.challenge(actionId, isBlock, playerId);
 
         if (challengeOutcome) {
-            const gameUpdate: GameUpdate = {
-                currentTurn: null,
-                currentAction: game.currentAction || null,
-                currentBlock: game.currentBlock || null,
-            };
-
             // Tell all players the result of the challenge
-            io.to(gameId).emit('gameUpdate', gameUpdate);
+            sendGameUpdateToAll(game, io);
 
             // If player was wrongly challenged, privately tell them their new hand
             const { success, winnerId } = challengeOutcome;
             if (success === false) {
-                const playerUpdate: PlayerUpdate = {
-                    playerHand: game.players.getOnePrivate(winnerId),
-                    opponentHands: null,
-                };
-                io.to(winnerId).send('playerUpdate', playerUpdate);
+                sendPlayerUpdateByPrivateRoom(winnerId, game, io);
             }
         }
 

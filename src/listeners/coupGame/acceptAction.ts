@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import CoupGames from '../../utils/classes/Game/CoupGames';
-import { GameUpdate } from './getGameSetup';
+import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 
 interface acceptActionRequest {
     actionId: string
@@ -16,18 +16,14 @@ const acceptAction = (io: Server, activeGames: CoupGames) => (
         const {
             actionId, playerId, gameId, isBlock,
         } = request;
+
         const game = activeGames.getOne(gameId);
 
         const acceptReceived = game.accept(actionId, isBlock, playerId);
 
         if (acceptReceived && game.currentAction) {
             // Notify players that someone accepted the attempted action
-            const gameUpdate: GameUpdate = {
-                currentTurn: null,
-                currentAction: game.currentAction,
-                currentBlock: null,
-            };
-            io.to(gameId).emit('gameUpdate', gameUpdate);
+            sendGameUpdateToAll(game, io);
         }
 
         // TODO: handle if not accepted

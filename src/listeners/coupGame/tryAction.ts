@@ -2,8 +2,8 @@ import { Server } from 'socket.io';
 import { CardType } from '../../utils/classes/Card/CoupCard';
 import CoupGames from '../../utils/classes/Game/CoupGames';
 import { INITIAL_ACTION_TIME_LIMIT } from '../../utils/consts/timeLimits';
-import { GameUpdate } from './getGameSetup';
 import expireAction from './helpers/expireAction';
+import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 
 export enum ActionType {
     Income = 'income',
@@ -35,11 +35,6 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
 
     if (tryReceived && game.currentAction) {
         // Notify players that current player is attempting an action
-        const gameUpdate: GameUpdate = {
-            currentTurn: null,
-            currentAction: game.currentAction,
-            currentBlock: null,
-        };
 
         const { canChallenge, canBlock } = game.currentAction;
 
@@ -51,7 +46,7 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
             );
         }
 
-        io.to(gameId).emit('gameUpdate', gameUpdate);
+        sendGameUpdateToAll(game, io);
     }
 
     // TODO: handle if not accepted

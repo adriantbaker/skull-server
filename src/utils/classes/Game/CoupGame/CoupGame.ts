@@ -1,8 +1,8 @@
 import { ActionType } from '../../../../listeners/coupGame/tryAction';
 import { BlockActionType } from '../../../../listeners/coupGame/tryBlock';
-import { ChallengeOutcome } from '../../../interfaces/signals';
+import { ActionOutcome, ChallengeOutcome } from '../../../interfaces/signals';
 import CoupCard, { CardType } from '../../Card/CoupCard';
-import Deck from '../../Deck/CoupDeck';
+import Deck, { Hand } from '../../Deck/CoupDeck';
 import CoupPlayer, { CoupPlayerPublic } from '../../Player/CoupPlayer';
 import CoupPlayers from '../../Player/CoupPlayers';
 import deckCardTypes from '../deckCardTypes';
@@ -148,6 +148,12 @@ class CoupGame {
         } else {
             this.currentAction = updatedAction;
         }
+
+        if (!updatedAction.canChallenge && !updatedAction.canBlock) {
+            // Everyone accepted the action
+            this.nextTurn();
+        }
+
         return true;
     }
 
@@ -240,66 +246,51 @@ class CoupGame {
         return true;
     }
 
-    income(playerId: string): void {
+    implementAction(actionType: ActionType, playerId: string, targetId?: string): ActionOutcome {
         const player = this.players.getOne(playerId);
-        player.addCoins(1);
+        let targetMustDiscard = false;
+        let drawnPlayerCards: Hand = [];
+        if (targetId) {
+            const target = this.players.getOne(targetId);
+            switch (actionType) {
+                case ActionType.Coup:
+                    player.removeCoins(7);
+                    targetMustDiscard = true;
+                    break;
+                case ActionType.Assassinate:
+                    player.removeCoins(3);
+                    targetMustDiscard = true;
+                    break;
+                case ActionType.Steal: {
+                    const numStolenCoins = target.removeCoins(2);
+                    player.addCoins(numStolenCoins);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        switch (actionType) {
+            case ActionType.Income:
+                player.addCoins(1);
+                break;
+            case ActionType.ForeignAid:
+                player.addCoins(2);
+                break;
+            case ActionType.Tax:
+                player.addCoins(3);
+                break;
+            case ActionType.Exchange:
+                drawnPlayerCards = this.deck.draw(2);
+                break;
+            default:
+                break;
+        }
+        return {
+            targetMustDiscard,
+            drawnPlayerCards,
+        };
     }
-
-    foreignAid(playerId: string): void {
-        const player = this.players.getOne(playerId);
-        player.addCoins(2);
-    }
-
-    coup(playerId: string, targetId: string): void {
-        const player = this.players.getOne(playerId);
-        // const target = this.players.getOne(targetId);
-        player.removeCoins(7);
-        // TODO: prompt target to choose 1 card to remove
-    }
-
-    tax(playerId: string): void {
-        const player = this.players.getOne(playerId);
-        player.addCoins(3);
-    }
-
-    assassinate(playerId: string, targetId: string): void {
-        const player = this.players.getOne(playerId);
-        // const target = this.players.getOne(targetId);
-        player.removeCoins(3);
-        // TODO: prompt target to choose 1 card to remove
-    }
-
-    steal(playerId: string, targetId: string): void {
-        const player = this.players.getOne(playerId);
-        const target = this.players.getOne(targetId);
-        target.removeCoins(2);
-        player.addCoins(2);
-        // TODO: account for player having less than 2 coins
-    }
-
-    exchange(playerId: string): void {
-        const player = this.players.getOne(playerId);
-        const newCards = this.deck.draw(2);
-        player.addCards(newCards);
-        // TODO: prompt player to choose which 2 to keep, which 2 to discard
-        this.deck.insert(newCards);
-    }
-
-    // blockForeignAid() {
-
-    // }
-
-    // blockAssassination() {
-
-    // }
-
-    // blockSteal() {
-
-    // }
-
-    // challenge() {
-
-    // }
 
     /** Getters */
 
