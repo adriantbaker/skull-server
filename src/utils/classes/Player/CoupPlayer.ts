@@ -8,6 +8,7 @@ export interface CoupPlayerPrivate {
     turnNumber: number
     cards: Hand
     exchangeCards: Hand
+    deadCards: Hand
     numCoins: number
 }
 
@@ -17,6 +18,7 @@ export interface CoupPlayerPublic {
     isOwner: boolean
     turnNumber: number
     numCards: number
+    deadCards: Hand
     numCoins: number
 }
 
@@ -27,6 +29,7 @@ class CoupPlayer {
     isOwner: boolean
     turnNumber: number
     cards: Hand
+    deadCards: Hand
     exchangeCards: Hand
     numCoins: number
 
@@ -38,6 +41,7 @@ class CoupPlayer {
         this.turnNumber = -1;
         this.numCoins = 2;
         this.cards = [];
+        this.deadCards = [];
         this.exchangeCards = [];
     }
 
@@ -51,12 +55,15 @@ class CoupPlayer {
 
     /**
      *
-     * @param cardId ID of card to be removed
-     *
      * @description Only use this function if you know the card exists in the player's hand
      */
     removeCard(cardId: number): CoupCard {
         return this.removeCards([cardId])[0];
+    }
+
+    killCards(cardIds: Array<number>): void {
+        const deadCards = this.removeCards(cardIds);
+        this.deadCards.push(...deadCards);
     }
 
     removeCards(cardIds: Array<number>): Array<CoupCard> {
@@ -95,6 +102,7 @@ class CoupPlayer {
             isOwner: this.isOwner,
             turnNumber: this.turnNumber,
             cards: this.cards,
+            deadCards: this.deadCards,
             exchangeCards: this.exchangeCards,
             numCoins: this.numCoins,
         };
@@ -110,6 +118,7 @@ class CoupPlayer {
             isOwner: this.isOwner,
             turnNumber: this.turnNumber,
             numCards: this.cards.length,
+            deadCards: this.deadCards,
             numCoins: this.numCoins,
         };
     }

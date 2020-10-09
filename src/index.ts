@@ -12,6 +12,7 @@ import tryAction from './listeners/coupGame/tryAction';
 import challengeAction from './listeners/coupGame/challengeAction';
 import tryBlock from './listeners/coupGame/tryBlock';
 import acceptAction from './listeners/coupGame/acceptAction';
+import discard from './listeners/coupGame/discard';
 
 // App setup
 const app = express();
@@ -46,6 +47,7 @@ io.on('connection', (socket) => {
     socket.on('challengeAction', challengeAction(io, activeGames));
     socket.on('acceptAction', acceptAction(io, activeGames));
     socket.on('tryBlock', tryBlock(io, activeGames));
+    socket.on('discard', discard(io, activeGames));
 
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);

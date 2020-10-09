@@ -10,6 +10,7 @@ import initializeAction, { Action } from './initializers/initializeAction';
 import canImplementAction from './methodHelpers/canImplementAction';
 import handleAccept from './methodHelpers/handleAccept';
 import handleChallenge from './methodHelpers/handleChallenge';
+import handleDiscard from './methodHelpers/handleDiscard';
 import handleExpireAction from './methodHelpers/handleExpireAction';
 import isAcceptedByAll from './methodHelpers/isAcceptedByAll';
 
@@ -316,6 +317,49 @@ class CoupGame {
         // TODO: Handle Blocks
 
         this.nextTurn();
+        return true;
+    }
+
+    discard(playerId: string, cardIds: Array<number>): boolean {
+        const mostRecentAction = this.currentBlock || this.currentAction;
+
+        if (!mostRecentAction) {
+            // No action in this turn; no reason to discard
+            return false;
+        }
+
+        let targetDiscard;
+
+        const { pendingChallengeLoserDiscard, pendingTargetDiscard } = mostRecentAction;
+        if (pendingChallengeLoserDiscard) {
+            targetDiscard = false;
+            const { challengeSucceeded, actingPlayerId, challengingPlayerId } = mostRecentAction;
+            const challengeLoserId = challengeSucceeded ? actingPlayerId : challengingPlayerId;
+            if (playerId !== challengeLoserId) {
+                // This player should not be discarding right now
+                return false;
+            }
+        } else if (pendingTargetDiscard) {
+            targetDiscard = true;
+            const { targetPlayerId } = mostRecentAction;
+            if (playerId !== targetPlayerId) {
+                // This player should not be discarding right now
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        const player = this.players.getOne(playerId);
+        player.killCards(cardIds);
+
+        const updatedAction = handleDiscard(mostRecentAction, targetDiscard);
+        const { isBlock } = updatedAction;
+        if (isBlock) {
+            this.currentBlock = updatedAction;
+        } else {
+            this.currentAction = updatedAction;
+        }
         return true;
     }
 
