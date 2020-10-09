@@ -8,6 +8,7 @@ import CoupPlayers from '../../Player/CoupPlayers';
 import deckCardTypes from '../deckCardTypes';
 import initializeAction, { Action } from './initializers/initializeAction';
 import canImplementAction from './methodHelpers/canImplementAction';
+import canDiscard from './methodHelpers/canDiscard';
 import handleAccept from './methodHelpers/handleAccept';
 import handleChallenge from './methodHelpers/handleChallenge';
 import handleDiscard from './methodHelpers/handleDiscard';
@@ -90,7 +91,7 @@ class CoupGame {
     }
 
     removePlayer(playerId: string): CoupPlayer {
-        return this.players.removePlayer(playerId) as CoupPlayer;
+        return this.players.removePlayer(playerId);
     }
 
     startGame(): void {
@@ -274,18 +275,15 @@ class CoupGame {
         } = actionToImplement;
 
         const player = this.players.getOne(playerId);
-        let targetMustDiscard = false;
         let drawnPlayerCards: Hand = [];
         if (targetId) {
             const target = this.players.getOne(targetId);
             switch (actionType) {
                 case ActionType.Coup:
                     player.removeCoins(7);
-                    targetMustDiscard = true;
                     break;
                 case ActionType.Assassinate:
                     player.removeCoins(3);
-                    targetMustDiscard = true;
                     break;
                 case ActionType.Steal: {
                     const numStolenCoins = target.removeCoins(2);
@@ -328,38 +326,26 @@ class CoupGame {
             return false;
         }
 
-        let targetDiscard;
-
-        const { pendingChallengeLoserDiscard, pendingTargetDiscard } = mostRecentAction;
-        if (pendingChallengeLoserDiscard) {
-            targetDiscard = false;
-            const { challengeSucceeded, actingPlayerId, challengingPlayerId } = mostRecentAction;
-            const challengeLoserId = challengeSucceeded ? actingPlayerId : challengingPlayerId;
-            if (playerId !== challengeLoserId) {
-                // This player should not be discarding right now
-                return false;
-            }
-        } else if (pendingTargetDiscard) {
-            targetDiscard = true;
-            const { targetPlayerId } = mostRecentAction;
-            if (playerId !== targetPlayerId) {
-                // This player should not be discarding right now
-                return false;
-            }
-        } else {
-            return false;
-        }
-
         const player = this.players.getOne(playerId);
         player.killCards(cardIds);
 
-        const updatedAction = handleDiscard(mostRecentAction, targetDiscard);
+        // Check that the player who is requesting to discard should be discarding
+        const { playerCanDiscard, targetPlayerDiscard } = canDiscard(playerId, mostRecentAction);
+
+        if (!playerCanDiscard) {
+            return false;
+        }
+
+        const updatedAction = handleDiscard(mostRecentAction, targetPlayerDiscard);
         const { isBlock } = updatedAction;
         if (isBlock) {
             this.currentBlock = updatedAction;
         } else {
             this.currentAction = updatedAction;
         }
+
+        this.nextTurn();
+
         return true;
     }
 
