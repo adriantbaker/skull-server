@@ -307,7 +307,9 @@ class CoupGame {
             case ActionType.Exchange:
                 drawnPlayerCards = this.deck.draw(2);
                 player.addExchangeCards(drawnPlayerCards);
-                break;
+                // We return early here to avoid advancing to the next turn
+                // Player must choose cards to exchange before turn can end
+                return true;
             default:
                 break;
         }
@@ -344,6 +346,49 @@ class CoupGame {
             this.currentAction = updatedAction;
         }
 
+        this.nextTurn();
+
+        return true;
+    }
+
+    exchange(playerId: string, cardIds: Array<number>): boolean {
+        if (!this.currentAction) {
+            // No exchange action has been called
+            return false;
+        }
+
+        const { actingPlayerId, pendingActorExchange } = this.currentAction;
+
+        if (!canImplementAction(this.currentAction)
+        || !pendingActorExchange
+        || actingPlayerId !== playerId) {
+            // Player cannot exchange
+            return false;
+        }
+
+        const player = this.players.getOne(playerId);
+
+        if (player.exchangeCards.length === 0) {
+            // Player has nothing to exchange
+            return false;
+        }
+
+        const allCards = player.cards.concat(player.exchangeCards);
+        const keptCards: CoupCard[] = [];
+        const discardedCards: CoupCard[] = [];
+        allCards.forEach((card) => {
+            if (cardIds.includes(card.id)) {
+                keptCards.push(card);
+            } else {
+                discardedCards.push(card);
+            }
+        });
+
+        player.cards = keptCards;
+        player.exchangeCards = [];
+        this.deck.insert(discardedCards);
+
+        // A successful exchange marks the end of a turn
         this.nextTurn();
 
         return true;

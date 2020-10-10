@@ -53,7 +53,7 @@ const initializeAction = (
     canBlock: isBlock ? false : initializeCanBlock(actionType),
     pendingActorExchange: actionType === ActionType.Exchange,
     pendingChallengeLoserDiscard: false,
-    pendingTargetDiscard: false,
+    pendingTargetDiscard: actionType === ActionType.Coup,
 });
 
 export default initializeAction;

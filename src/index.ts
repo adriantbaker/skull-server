@@ -13,6 +13,7 @@ import challengeAction from './listeners/coupGame/challengeAction';
 import tryBlock from './listeners/coupGame/tryBlock';
 import acceptAction from './listeners/coupGame/acceptAction';
 import discard from './listeners/coupGame/discard';
+import exchange from './listeners/coupGame/exchange';
 
 // App setup
 const app = express();
@@ -48,6 +49,7 @@ io.on('connection', (socket) => {
     socket.on('acceptAction', acceptAction(io, activeGames));
     socket.on('tryBlock', tryBlock(io, activeGames));
     socket.on('discard', discard(io, activeGames));
+    socket.on('exchange', exchange(io, activeGames));
 
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
