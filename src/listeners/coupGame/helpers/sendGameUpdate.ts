@@ -6,6 +6,8 @@ export interface GameUpdate {
     currentTurn: Turn,
     currentAction: Action | undefined,
     currentBlock: Action | undefined
+    won: boolean
+    winnerId: string
 }
 
 const getGameUpdate = (game: CoupGame): GameUpdate => {
@@ -13,6 +15,8 @@ const getGameUpdate = (game: CoupGame): GameUpdate => {
         currentTurn: game.currentTurn,
         currentAction: game.currentAction,
         currentBlock: game.currentBlock,
+        won: game.won,
+        winnerId: game.winnerId,
     };
     return gameUpdate;
 };

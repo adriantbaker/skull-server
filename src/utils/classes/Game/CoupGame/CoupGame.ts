@@ -37,6 +37,8 @@ export interface CoupGamePublic {
     currentAction: Action | undefined
     currentBlock: Action | undefined
     deck: Deck
+    won: boolean
+    winnerId: string
 }
 
 class CoupGame {
@@ -50,6 +52,8 @@ class CoupGame {
     currentAction: Action | undefined
     currentBlock: Action | undefined
     deck: Deck
+    won: boolean
+    winnerId: string
 
     /**
      *
@@ -73,6 +77,8 @@ class CoupGame {
         };
         this.currentAction = undefined;
         this.currentBlock = undefined;
+        this.won = false;
+        this.winnerId = '';
 
         // Initialize Coup deck
         const deckCards: Array<CoupCard> = [];
@@ -118,16 +124,38 @@ class CoupGame {
             }
         }
 
-        const nextTurnNumber = (this.currentTurn.number + 1) % this.numPlayers;
-        const nextTurnPlayerId = this.players.turnOrder[nextTurnNumber];
-        const nextTurnPlayerName = this.players.getOne(nextTurnPlayerId).name;
-        this.currentTurn = {
-            number: nextTurnNumber,
-            playerId: nextTurnPlayerId,
-            playerName: nextTurnPlayerName,
-        };
+        let nextTurnNumber = (this.currentTurn.number + 1) % this.numPlayers;
+        let nextTurnPlayerId = this.players.turnOrder[nextTurnNumber];
+        let nextTurnPlayer = this.players.getOne(nextTurnPlayerId);
+        let numSkips = 0;
+        while (nextTurnPlayer.isEliminated()) {
+            numSkips += 1;
+            nextTurnNumber = (nextTurnNumber + 1) % this.numPlayers;
+            nextTurnPlayerId = (this.players.turnOrder[nextTurnNumber]);
+            nextTurnPlayer = this.players.getOne(nextTurnPlayerId);
+        }
+
         this.currentAction = undefined;
         this.currentBlock = undefined;
+
+        if (numSkips === this.numPlayers - 1) {
+            // Everyone else has been eliminated; we have a winner
+            this.currentTurn = {
+                number: -1,
+                playerId: '',
+                playerName: '',
+            };
+            this.won = true;
+            this.winnerId = nextTurnPlayerId;
+        } else {
+            const nextTurnPlayerName = nextTurnPlayer.name;
+
+            this.currentTurn = {
+                number: nextTurnNumber,
+                playerId: nextTurnPlayerId,
+                playerName: nextTurnPlayerName,
+            };
+        }
     }
 
     attempt(
@@ -206,7 +234,7 @@ class CoupGame {
         if ((isBlock && success) || (!isBlock && !success)) {
             // An action was wrongly challenged, or a counteraction was rightly challenged
             // The initial action should go through
-            // this.tryToImplementAction();
+            this.tryToImplementAction();
         }
 
         return {
@@ -418,6 +446,8 @@ class CoupGame {
             currentAction: this.currentAction,
             currentBlock: this.currentBlock,
             deck: this.deck,
+            won: this.won,
+            winnerId: this.winnerId,
         };
     }
 }

@@ -90,6 +90,10 @@ class CoupPlayer {
         return numCoinsRemoved;
     }
 
+    isEliminated(): boolean {
+        return this.cards.length === 0;
+    }
+
     /** Getters */
 
     /**
