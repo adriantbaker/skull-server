@@ -206,7 +206,7 @@ class CoupGame {
         if ((isBlock && success) || (!isBlock && !success)) {
             // An action was wrongly challenged, or a counteraction was rightly challenged
             // The initial action should go through
-            this.tryToImplementAction();
+            // this.tryToImplementAction();
         }
 
         return {
@@ -277,15 +277,14 @@ class CoupGame {
     }
 
     tryToImplementAction(): boolean {
-        const actionToImplement = this.currentAction;
-        if (!actionToImplement || !canImplementAction(actionToImplement)) {
+        if (!this.currentAction || !canImplementAction(this.currentAction)) {
             return false;
         }
         const {
             actionType,
             actingPlayerId: playerId,
             targetPlayerId: targetId,
-        } = actionToImplement;
+        } = this.currentAction;
 
         const player = this.players.getOne(playerId);
         let drawnPlayerCards: Hand = [];
@@ -297,6 +296,7 @@ class CoupGame {
                     break;
                 case ActionType.Assassinate:
                     player.removeCoins(3);
+                    this.currentAction.pendingTargetDiscard = true;
                     break;
                 case ActionType.Steal: {
                     const numStolenCoins = target.removeCoins(2);

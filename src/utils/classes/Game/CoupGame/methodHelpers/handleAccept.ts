@@ -35,7 +35,7 @@ const handleAccept = (
         acceptedBy: newAcceptedBy,
         canChallenge: currentActionOrBlock.canChallenge && !acceptedByAll,
         canBlock: currentActionOrBlock.canBlock && !acceptedByAll,
-        pendingTargetDiscard: targetActionNeeded(actionType),
+        pendingTargetDiscard: acceptedByAll && targetActionNeeded(actionType),
     };
 
     return newActionOrBlock;

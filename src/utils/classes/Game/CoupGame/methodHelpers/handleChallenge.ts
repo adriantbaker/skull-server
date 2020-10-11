@@ -41,6 +41,7 @@ const handleChallenge = (
         const newActionOrBlock = {
             ...currentActionOrBlock,
             ...challengeEffects,
+            pendingActorExchange: false,
             challengeSucceeded: true,
         };
 
