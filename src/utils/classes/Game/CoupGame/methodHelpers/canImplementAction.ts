@@ -4,14 +4,9 @@ const canImplementAction = (action: Action): boolean => {
     const {
         canChallenge,
         canBlock,
-        pendingChallengeLoserDiscard,
-        pendingTargetDiscard,
     } = action;
 
-    return (!(canChallenge
-        || canBlock
-        || pendingChallengeLoserDiscard
-        || pendingTargetDiscard));
+    return !canChallenge && !canBlock;
 };
 
 export default canImplementAction;

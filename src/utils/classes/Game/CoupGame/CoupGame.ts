@@ -14,6 +14,7 @@ import handleChallenge from './methodHelpers/handleChallenge';
 import handleDiscard from './methodHelpers/handleDiscard';
 import handleExpireAction from './methodHelpers/handleExpireAction';
 import isAcceptedByAll from './methodHelpers/isAcceptedByAll';
+import canAdvanceTurn from './methodHelpers/canAdvanceTurn';
 
 export interface AttemptOutcome {
     received: boolean
@@ -105,10 +106,18 @@ class CoupGame {
 
         // Signal game has started
         this.started = true;
-        this.nextTurn();
+        this.tryNextTurn();
     }
 
-    nextTurn(): void {
+    tryNextTurn(): void {
+        const mostRecentAction = this.currentBlock || this.currentAction;
+        if (mostRecentAction) {
+            if (!canAdvanceTurn(mostRecentAction)) {
+                // Still some pending player action (discard / exchange)
+                return;
+            }
+        }
+
         const nextTurnNumber = (this.currentTurn.number + 1) % this.numPlayers;
         const nextTurnPlayerId = this.players.turnOrder[nextTurnNumber];
         const nextTurnPlayerName = this.players.getOne(nextTurnPlayerId).name;
@@ -145,7 +154,7 @@ class CoupGame {
             targetId,
         );
 
-        const implemented = this.tryToImplementAction(false);
+        const implemented = this.tryToImplementAction();
 
         return {
             received: true,
@@ -163,11 +172,11 @@ class CoupGame {
         // The action must be updated
         if (isBlock) {
             this.currentBlock = updatedAction;
+            this.tryNextTurn();
         } else {
             this.currentAction = updatedAction;
+            this.tryToImplementAction();
         }
-
-        this.tryToImplementAction(isBlock);
 
         return true;
     }
@@ -193,6 +202,12 @@ class CoupGame {
         }
 
         const { actingPlayerId, challengeSucceeded: success } = updatedAction;
+
+        if ((isBlock && success) || (!isBlock && !success)) {
+            // An action was wrongly challenged, or a counteraction was rightly challenged
+            // The initial action should go through
+            this.tryToImplementAction();
+        }
 
         return {
             success,
@@ -261,10 +276,8 @@ class CoupGame {
         return true;
     }
 
-    tryToImplementAction(
-        isBlock: boolean,
-    ): boolean {
-        const actionToImplement = isBlock ? this.currentBlock : this.currentAction;
+    tryToImplementAction(): boolean {
+        const actionToImplement = this.currentAction;
         if (!actionToImplement || !canImplementAction(actionToImplement)) {
             return false;
         }
@@ -307,16 +320,12 @@ class CoupGame {
             case ActionType.Exchange:
                 drawnPlayerCards = this.deck.draw(2);
                 player.addExchangeCards(drawnPlayerCards);
-                // We return early here to avoid advancing to the next turn
-                // Player must choose cards to exchange before turn can end
-                return true;
+                break;
             default:
                 break;
         }
 
-        // TODO: Handle Blocks
-
-        this.nextTurn();
+        this.tryNextTurn();
         return true;
     }
 
@@ -346,7 +355,7 @@ class CoupGame {
             this.currentAction = updatedAction;
         }
 
-        this.nextTurn();
+        this.tryNextTurn();
 
         return true;
     }
@@ -360,8 +369,8 @@ class CoupGame {
         const { actingPlayerId, pendingActorExchange } = this.currentAction;
 
         if (!canImplementAction(this.currentAction)
-        || !pendingActorExchange
-        || actingPlayerId !== playerId) {
+            || !pendingActorExchange
+            || actingPlayerId !== playerId) {
             // Player cannot exchange
             return false;
         }
@@ -388,8 +397,10 @@ class CoupGame {
         player.exchangeCards = [];
         this.deck.insert(discardedCards);
 
+        this.currentAction.pendingActorExchange = false;
+
         // A successful exchange marks the end of a turn
-        this.nextTurn();
+        this.tryNextTurn();
 
         return true;
     }
