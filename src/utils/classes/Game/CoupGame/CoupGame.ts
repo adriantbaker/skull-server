@@ -200,6 +200,7 @@ class CoupGame {
         // The action must be updated
         if (isBlock) {
             this.currentBlock = updatedAction;
+            this.tryToChargeForAction();
             this.tryNextTurn();
         } else {
             this.currentAction = updatedAction;
@@ -235,6 +236,11 @@ class CoupGame {
             // An action was wrongly challenged, or a counteraction was rightly challenged
             // The initial action should go through
             this.tryToImplementAction();
+        }
+        if (isBlock && !success) {
+            // A counteraction was wrongly challenged, so it succeeded
+            // Therefore, original actor should be charged if necessary
+            this.tryToChargeForAction();
         }
 
         return {
@@ -355,6 +361,20 @@ class CoupGame {
 
         this.tryNextTurn();
         return true;
+    }
+
+    tryToChargeForAction(): void {
+        // Called when an action fails,
+        // but the person who attempted it should be charged
+        if (this.currentBlock) {
+            const { actionType, targetPlayerId } = this.currentBlock;
+            if (actionType === BlockActionType.BlockAssassinate
+                && targetPlayerId
+                && canImplementAction(this.currentBlock)) {
+                const player = this.players.getOne(targetPlayerId);
+                player.removeCoins(3);
+            }
+        }
     }
 
     discard(playerId: string, cardIds: Array<number>): boolean {
