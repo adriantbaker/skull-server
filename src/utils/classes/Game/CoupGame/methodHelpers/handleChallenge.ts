@@ -28,6 +28,7 @@ const handleChallenge = (
         canChallenge: false,
         challenged: true,
         challengingPlayerId,
+        challengingPlayerName: players.getOne(challengingPlayerId).name,
         pendingChallengeLoserDiscard: true,
     };
 
