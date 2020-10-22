@@ -15,6 +15,7 @@ import handleDiscard from './methodHelpers/handleDiscard';
 import handleExpireAction from './methodHelpers/handleExpireAction';
 import isAcceptedByAll from './methodHelpers/isAcceptedByAll';
 import canAdvanceTurn from './methodHelpers/canAdvanceTurn';
+import isAcceptedOrBlockedByAll from './methodHelpers/isAcceptedOrBlockedByAll';
 
 export interface AttemptOutcome {
     received: boolean
@@ -36,6 +37,7 @@ export interface CoupGamePublic {
     currentTurn: Turn
     currentAction: Action | undefined
     currentBlock: Action | undefined
+    pastBlocks: Array<Action>
     deck: Deck
     won: boolean
     winnerId: string
@@ -51,6 +53,7 @@ class CoupGame {
     currentTurn: Turn
     currentAction: Action | undefined
     currentBlock: Action | undefined
+    pastBlocks: Array<Action>
     deck: Deck
     won: boolean
     winnerId: string
@@ -77,6 +80,7 @@ class CoupGame {
         };
         this.currentAction = undefined;
         this.currentBlock = undefined;
+        this.pastBlocks = [];
         this.won = false;
         this.winnerId = '';
 
@@ -116,12 +120,9 @@ class CoupGame {
     }
 
     tryNextTurn(): void {
-        const mostRecentAction = this.currentBlock || this.currentAction;
-        if (mostRecentAction) {
-            if (!canAdvanceTurn(mostRecentAction)) {
-                // Still some pending player action (discard / exchange)
-                return;
-            }
+        if (this.currentAction && !canAdvanceTurn(this.currentAction, this.currentBlock)) {
+            // Still some pending player action (block / discard / exchange)
+            return;
         }
 
         let nextTurnNumber = (this.currentTurn.number + 1) % this.numPlayers;
@@ -137,6 +138,7 @@ class CoupGame {
 
         this.currentAction = undefined;
         this.currentBlock = undefined;
+        this.pastBlocks = [];
 
         if (numSkips === this.numPlayers - 1) {
             // Everyone else has been eliminated; we have a winner
@@ -199,11 +201,23 @@ class CoupGame {
         }
         // The action must be updated
         if (isBlock) {
+            if (!this.currentAction) {
+                // Trying to accept a block when no action exists
+                return false;
+            }
+
             this.currentBlock = updatedAction;
-            this.tryToChargeForAction();
+            // If everyone has accepted the block, it is resolved
+            const acceptedByAll = isAcceptedByAll(updatedAction.acceptedBy);
+            if (acceptedByAll) {
+                this.currentAction.canBlock = false;
+                this.pastBlocks.push(this.currentBlock);
+                this.currentBlock = undefined;
+            }
             this.tryNextTurn();
         } else {
             this.currentAction = updatedAction;
+            this.tryToChargeForAction();
             this.tryToImplementAction();
         }
 
@@ -215,14 +229,21 @@ class CoupGame {
         isBlock: boolean,
         challengingPlayerId: string,
     ): ChallengeOutcome | undefined {
+        if (!this.currentAction || (isBlock && !this.currentBlock)) {
+            return undefined;
+        }
+
         const action = isBlock ? this.currentBlock : this.currentAction;
+
         const updatedAction = handleChallenge(
             actionId, action, challengingPlayerId, this.players, this.deck,
         );
+
         if (!updatedAction) {
             // The player was unable to challenge the action
             return undefined;
         }
+
         // The action must be updated
         if (isBlock) {
             this.currentBlock = updatedAction;
@@ -232,15 +253,27 @@ class CoupGame {
 
         const { actingPlayerId, challengeSucceeded: success } = updatedAction;
 
-        if ((isBlock && success) || (!isBlock && !success)) {
-            // An action was wrongly challenged, or a counteraction was rightly challenged
-            // The initial action should go through
+        if (!isBlock && !success) {
+            // An action was wrongly challenged
+            this.tryToChargeForAction();
             this.tryToImplementAction();
         }
-        if (isBlock && !success) {
-            // A counteraction was wrongly challenged, so it succeeded
-            // Therefore, original actor should be charged if necessary
-            this.tryToChargeForAction();
+
+        if (isBlock && this.currentBlock) {
+            if (success) {
+                // A block was rightly challenged
+                // The failed blocker automatically accepts the action
+                this.currentAction.acceptedBy = {
+                    ...this.currentAction.acceptedBy,
+                    [actingPlayerId]: true,
+                };
+            } else {
+                // A block was wrongly challenged
+                // The block succeeds, so the turn is over
+                this.pastBlocks.push(this.currentBlock);
+                this.currentBlock = undefined;
+            }
+            this.tryToImplementAction();
         }
 
         return {
@@ -258,20 +291,30 @@ class CoupGame {
     ): boolean {
         if (this.currentAction === undefined
             || !this.currentAction.canBlock
+            || this.currentAction.blockedBy[playerId]
             || this.currentAction.id !== actionId) {
-            // Trying to block a stale action or an action that
-            // cannot be blocked (income / coup)
+            // Trying to block a stale action,
+            // an action that the user already blocked, or
+            // an action that cannot be blocked (income / coup)
             return false;
         }
 
         // TODO: add logic here to see if it can be blocked - if player IS the target,
         // OR it's a target-less action that can be blocked, e.g., foreign aid
 
-        // It's now too late for players to challenge / block the initial action
+        // Keep track of who has blocked
+        this.currentAction.blockedBy = {
+            ...this.currentAction.blockedBy,
+            [playerId]: true,
+        };
+
+        const acceptedOrBlockedByAll = isAcceptedOrBlockedByAll(this.currentAction);
+
+        // It's now too late for players to challenge the initial action
         this.currentAction = {
             ...this.currentAction,
             canChallenge: false,
-            canBlock: false,
+            canBlock: !acceptedOrBlockedByAll,
         };
 
         this.currentBlock = initializeAction(
@@ -282,6 +325,8 @@ class CoupGame {
             claimedCard,
             this.currentAction.actingPlayerId,
         );
+
+        this.tryToChargeForAction();
 
         return true;
     }
@@ -325,11 +370,11 @@ class CoupGame {
         if (targetId) {
             const target = this.players.getOne(targetId);
             switch (actionType) {
+                // TODO: untangle this logic - Coup action is initialized with pendingTargetDiscard
                 case ActionType.Coup:
                     player.removeCoins(7);
                     break;
                 case ActionType.Assassinate:
-                    player.removeCoins(3);
                     this.currentAction.pendingTargetDiscard = true;
                     break;
                 case ActionType.Steal: {
@@ -364,16 +409,27 @@ class CoupGame {
     }
 
     tryToChargeForAction(): void {
-        // Called when an action fails,
-        // but the person who attempted it should be charged
-        if (this.currentBlock) {
-            const { actionType, targetPlayerId } = this.currentBlock;
-            if (actionType === BlockActionType.BlockAssassinate
-                && targetPlayerId
-                && canImplementAction(this.currentBlock)) {
-                const player = this.players.getOne(targetPlayerId);
+        // Charges a player for an action if appropriate
+        // (either it was challenged, or everyone has accepted it)
+        if (!this.currentAction) {
+            return;
+        }
+        const { canChallenge, actionType, actingPlayerId } = this.currentAction;
+
+        if (canChallenge || this.pastBlocks.length > 0) {
+            // Still waiting on people to accept / challenge,
+            // or someone already tried a block which means the actor already paid
+            return;
+        }
+
+        const player = this.players.getOne(actingPlayerId);
+
+        switch (actionType) {
+            case ActionType.Assassinate:
                 player.removeCoins(3);
-            }
+                break;
+            default:
+                break;
         }
     }
 
@@ -398,7 +454,8 @@ class CoupGame {
         const updatedAction = handleDiscard(mostRecentAction, targetPlayerDiscard);
         const { isBlock } = updatedAction;
         if (isBlock) {
-            this.currentBlock = updatedAction;
+            this.pastBlocks.push(updatedAction);
+            this.currentBlock = undefined;
         } else {
             this.currentAction = updatedAction;
         }
@@ -465,6 +522,7 @@ class CoupGame {
             currentTurn: this.currentTurn,
             currentAction: this.currentAction,
             currentBlock: this.currentBlock,
+            pastBlocks: this.pastBlocks,
             deck: this.deck,
             won: this.won,
             winnerId: this.winnerId,

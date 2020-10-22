@@ -61,6 +61,7 @@ const handleChallenge = (
     const removedCard = actingPlayer.removeCard(actingPlayerCard.id);
     deck.insert([removedCard]);
     const newCard = deck.drawOne();
+    console.log(`The vindicated person swapped out their ${removedCard.type} for ${newCard.type}`);
     actingPlayer.addCards([newCard]);
 
     return newActionOrBlock;

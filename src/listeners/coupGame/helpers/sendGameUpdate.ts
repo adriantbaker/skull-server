@@ -4,8 +4,9 @@ import { Action } from '../../../utils/classes/Game/CoupGame/initializers/initia
 
 export interface GameUpdate {
     currentTurn: Turn,
-    currentAction: Action | undefined,
+    currentAction: Action | undefined
     currentBlock: Action | undefined
+    pastBlocks: Array<Action>
     won: boolean
     winnerId: string
 }
@@ -15,6 +16,7 @@ const getGameUpdate = (game: CoupGame): GameUpdate => {
         currentTurn: game.currentTurn,
         currentAction: game.currentAction,
         currentBlock: game.currentBlock,
+        pastBlocks: game.pastBlocks,
         won: game.won,
         winnerId: game.winnerId,
     };

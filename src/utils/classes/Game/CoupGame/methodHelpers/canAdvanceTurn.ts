@@ -1,6 +1,6 @@
 import { Action } from '../initializers/initializeAction';
 
-const canAdvanceTurn = (action: Action): boolean => {
+const canAdvanceTurn = (action: Action, block: Action | undefined): boolean => {
     const {
         canChallenge,
         canBlock,
@@ -9,7 +9,10 @@ const canAdvanceTurn = (action: Action): boolean => {
         pendingTargetDiscard,
     } = action;
 
-    return (!canChallenge
+    // All blocks must be resolved (i.e., no current block)
+    // and action must have no pending decisions
+    return (!block
+        && !canChallenge
         && !canBlock
         && !pendingActorExchange
         && !pendingChallengeLoserDiscard

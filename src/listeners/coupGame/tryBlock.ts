@@ -4,6 +4,7 @@ import CoupGames from '../../utils/classes/Game/CoupGames';
 import { COUNTER_ACTION_TIME_LIMIT } from '../../utils/consts/timeLimits';
 import expireAction from './helpers/expireAction';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
+import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
 
 export enum BlockActionType {
     BlockForeignAid = 'blockForeignAid',
@@ -38,6 +39,7 @@ const tryBlock = (io: Server, activeGames: CoupGames) => (request: tryBlockReque
         );
 
         // Notify players that someone has blocked the action
+        sendPlayerUpdateToAll(game, io);
         sendGameUpdateToAll(game, io);
     }
 };

@@ -1,5 +1,4 @@
 import targetActionNeeded from '../../../../../listeners/coupGame/helpers/targetActionNeeded';
-import { ActionType } from '../../../../../listeners/coupGame/tryAction';
 import { Action } from '../initializers/initializeAction';
 import isAcceptedByAll from './isAcceptedByAll';
 
