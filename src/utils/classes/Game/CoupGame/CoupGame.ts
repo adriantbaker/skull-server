@@ -267,13 +267,12 @@ class CoupGame {
                     ...this.currentAction.acceptedBy,
                     [actingPlayerId]: true,
                 };
+                this.tryToImplementAction();
             } else {
-                // A block was wrongly challenged
-                // The block succeeds, so the turn is over
-                this.pastBlocks.push(this.currentBlock);
-                this.currentBlock = undefined;
+                // A block was wrongly challenged, so it goes through
+                // No one else can block
+                this.currentAction.canBlock = false;
             }
-            this.tryToImplementAction();
         }
 
         return {
@@ -441,9 +440,6 @@ class CoupGame {
             return false;
         }
 
-        const player = this.players.getOne(playerId);
-        player.killCards(cardIds);
-
         // Check that the player who is requesting to discard should be discarding
         const { playerCanDiscard, targetPlayerDiscard } = canDiscard(playerId, mostRecentAction);
 
@@ -451,9 +447,14 @@ class CoupGame {
             return false;
         }
 
+        const player = this.players.getOne(playerId);
+        player.killCards(cardIds);
+
         const updatedAction = handleDiscard(mostRecentAction, targetPlayerDiscard);
         const { isBlock } = updatedAction;
         if (isBlock) {
+            // THe person who lost a challenge to a block has discarded,
+            // so we can resolve it
             this.pastBlocks.push(updatedAction);
             this.currentBlock = undefined;
         } else {
