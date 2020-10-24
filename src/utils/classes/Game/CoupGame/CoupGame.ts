@@ -194,7 +194,7 @@ class CoupGame {
 
     accept(actionId: string, isBlock: boolean, playerId: string): boolean {
         const action = isBlock ? this.currentBlock : this.currentAction;
-        const updatedAction = handleAccept(actionId, action, playerId);
+        const updatedAction = handleAccept(actionId, action, playerId, this.players);
         if (!updatedAction) {
             // The player was unable to accept the action
             return false;
@@ -452,11 +452,19 @@ class CoupGame {
 
         const updatedAction = handleDiscard(mostRecentAction, targetPlayerDiscard);
         const { isBlock } = updatedAction;
-        if (isBlock) {
-            // THe person who lost a challenge to a block has discarded,
+        if (isBlock && this.currentAction) {
+            // The person who lost a challenge to a block has discarded,
             // so we can resolve it
             this.pastBlocks.push(updatedAction);
             this.currentBlock = undefined;
+
+            // If as a result, the target of the initial action is eliminated,
+            // there is no need to continue to resolve the action
+            if (playerId === this.currentAction.targetPlayerId
+                && player.cards.length === 0) {
+                this.currentAction.canChallenge = false;
+                this.currentAction.canBlock = false;
+            }
         } else {
             this.currentAction = updatedAction;
         }

@@ -9,7 +9,6 @@ const handleChallenge = (
     players: CoupPlayers,
     deck: CoupDeck,
 ): Action | undefined => {
-    console.log('Handle challenge...');
     if (!currentActionOrBlock
         || !currentActionOrBlock.canChallenge
         || !currentActionOrBlock.claimedCard
