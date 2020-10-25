@@ -41,6 +41,7 @@ export interface CoupGamePublic {
     deck: Deck
     won: boolean
     winnerId: string
+    winnerName: string
 }
 
 class CoupGame {
@@ -57,6 +58,7 @@ class CoupGame {
     deck: Deck
     won: boolean
     winnerId: string
+    winnerName: string
 
     /**
      *
@@ -83,6 +85,7 @@ class CoupGame {
         this.pastBlocks = [];
         this.won = false;
         this.winnerId = '';
+        this.winnerName = '';
 
         // Initialize Coup deck
         const deckCards: Array<CoupCard> = [];
@@ -125,39 +128,48 @@ class CoupGame {
             return;
         }
 
-        let nextTurnNumber = (this.currentTurn.number + 1) % this.numPlayers;
-        let nextTurnPlayerId = this.players.turnOrder[nextTurnNumber];
-        let nextTurnPlayer = this.players.getOne(nextTurnPlayerId);
-        let numSkips = 0;
-        while (nextTurnPlayer.isEliminated()) {
-            numSkips += 1;
-            nextTurnNumber = (nextTurnNumber + 1) % this.numPlayers;
-            nextTurnPlayerId = (this.players.turnOrder[nextTurnNumber]);
-            nextTurnPlayer = this.players.getOne(nextTurnPlayerId);
-        }
-
         this.currentAction = undefined;
         this.currentBlock = undefined;
         this.pastBlocks = [];
 
-        if (numSkips === this.numPlayers - 1) {
+        const activePlayerIds = this.players.getActivePlayerIds();
+
+        if (activePlayerIds.length === 0) {
+            // Something has gone wrong
+            return;
+        }
+
+        if (activePlayerIds.length === 1) {
             // Everyone else has been eliminated; we have a winner
+            const [winnerId] = activePlayerIds;
+
             this.currentTurn = {
                 number: -1,
                 playerId: '',
                 playerName: '',
             };
             this.won = true;
-            this.winnerId = nextTurnPlayerId;
-        } else {
-            const nextTurnPlayerName = nextTurnPlayer.name;
+            this.winnerId = winnerId;
+            this.winnerName = this.players.getOne(winnerId).name;
 
-            this.currentTurn = {
-                number: nextTurnNumber,
-                playerId: nextTurnPlayerId,
-                playerName: nextTurnPlayerName,
-            };
+            return;
         }
+
+        let nextTurnNumber = (this.currentTurn.number + 1) % this.numPlayers;
+        let nextTurnPlayerId = this.players.turnOrder[nextTurnNumber];
+        while (!activePlayerIds.includes(nextTurnPlayerId)) {
+            nextTurnNumber = (nextTurnNumber + 1) % this.numPlayers;
+            nextTurnPlayerId = (this.players.turnOrder[nextTurnNumber]);
+        }
+
+        const nextTurnPlayer = this.players.getOne(nextTurnPlayerId);
+        const nextTurnPlayerName = nextTurnPlayer.name;
+
+        this.currentTurn = {
+            number: nextTurnNumber,
+            playerId: nextTurnPlayerId,
+            playerName: nextTurnPlayerName,
+        };
     }
 
     attempt(
@@ -469,6 +481,7 @@ class CoupGame {
             this.currentAction = updatedAction;
         }
 
+        console.log('Discard...');
         this.tryNextTurn();
 
         return true;
@@ -535,6 +548,7 @@ class CoupGame {
             deck: this.deck,
             won: this.won,
             winnerId: this.winnerId,
+            winnerName: this.winnerName,
         };
     }
 }

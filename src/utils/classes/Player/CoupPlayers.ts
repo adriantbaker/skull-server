@@ -101,6 +101,12 @@ class CoupPlayers {
     getNumPlayers(): number {
         return Object.keys(this.players).length;
     }
+
+    getActivePlayerIds(): Array<string> {
+        return Object.values(this.players)
+            .filter((player) => !player.isEliminated())
+            .map((player) => player.id);
+    }
 }
 
 export default CoupPlayers;

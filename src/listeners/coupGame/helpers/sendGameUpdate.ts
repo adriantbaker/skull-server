@@ -9,6 +9,7 @@ export interface GameUpdate {
     pastBlocks: Array<Action>
     won: boolean
     winnerId: string
+    winnerName: string
 }
 
 const getGameUpdate = (game: CoupGame): GameUpdate => {
@@ -19,6 +20,7 @@ const getGameUpdate = (game: CoupGame): GameUpdate => {
         pastBlocks: game.pastBlocks,
         won: game.won,
         winnerId: game.winnerId,
+        winnerName: game.winnerName,
     };
     return gameUpdate;
 };
