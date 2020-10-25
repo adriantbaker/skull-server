@@ -27,7 +27,7 @@ const handleAccept = (
         [playerId]: true,
     };
 
-    const acceptedByAll = isAcceptedByAll(newAcceptedBy);
+    const acceptedByAll = isAcceptedByAll(newAcceptedBy, players);
 
     const { actionType, targetPlayerId } = currentActionOrBlock;
 

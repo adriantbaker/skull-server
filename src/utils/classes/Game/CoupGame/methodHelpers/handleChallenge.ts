@@ -33,7 +33,7 @@ const handleChallenge = (
     };
 
     // Check if the challenged player is bluffing
-    const { claimedCard, actingPlayerId } = currentActionOrBlock;
+    const { claimedCard, actingPlayerId, targetPlayerId } = currentActionOrBlock;
     const actingPlayer = players.getOne(actingPlayerId);
     const actingPlayerCard = actingPlayer.searchForCardOfType(claimedCard);
 
@@ -57,11 +57,20 @@ const handleChallenge = (
         challengeSucceeded: false,
     };
 
+    if (challengingPlayerId === targetPlayerId) {
+        const challengeLoser = players.getOne(challengingPlayerId);
+        const numChallengeLoserCards = challengeLoser.cards.length;
+        if (numChallengeLoserCards === 1) {
+            // After the challenge loser discards, they will be eliminated
+            // Thus, there is no need / way to block the action against them
+            newActionOrBlock.canBlock = false;
+        }
+    }
+
     // Player who was wrongly challenged trades their card for a new one
     const removedCard = actingPlayer.removeCard(actingPlayerCard.id);
     deck.insert([removedCard]);
     const newCard = deck.drawOne();
-    console.log(`The vindicated person swapped out their ${removedCard.type} for ${newCard.type}`);
     actingPlayer.addCards([newCard]);
 
     return newActionOrBlock;

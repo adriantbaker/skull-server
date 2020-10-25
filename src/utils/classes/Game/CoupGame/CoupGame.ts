@@ -220,7 +220,7 @@ class CoupGame {
 
             this.currentBlock = updatedAction;
             // If everyone has accepted the block, it is resolved
-            const acceptedByAll = isAcceptedByAll(updatedAction.acceptedBy);
+            const acceptedByAll = isAcceptedByAll(updatedAction.acceptedBy, this.players);
             if (acceptedByAll) {
                 this.currentAction.canBlock = false;
                 this.pastBlocks.push(this.currentBlock);
@@ -350,7 +350,7 @@ class CoupGame {
             return false;
         }
         const { acceptedBy } = action;
-        if (isAcceptedByAll(acceptedBy)) {
+        if (isAcceptedByAll(acceptedBy, this.players)) {
             // Everyone already accepted, stale action
             return false;
         }
@@ -481,7 +481,6 @@ class CoupGame {
             this.currentAction = updatedAction;
         }
 
-        console.log('Discard...');
         this.tryNextTurn();
 
         return true;
