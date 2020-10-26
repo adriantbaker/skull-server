@@ -53,10 +53,10 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
 
             if (canChallenge || canBlock) {
                 // Set a time limit for people to challenge / block action
-                setTimeout(
+                /** setTimeout(
                     expireAction(io, game, game.currentAction),
                     INITIAL_ACTION_TIME_LIMIT,
-                );
+                ); */
             }
 
             sendGameUpdateToAll(game, io);

@@ -1,6 +1,5 @@
 import { Socket, Server } from 'socket.io';
 import CoupPlayer from '../../utils/classes/Player/CoupPlayer';
-import Room from '../../utils/classes/Room/Room';
 import Rooms from '../../utils/classes/Room/Rooms';
 
 interface createRoomRequest {
@@ -13,8 +12,7 @@ const createRoom = (io: Server, socket: Socket, lobby: Rooms) => (
         const { roomName, ownerName } = request;
         // Add room to lobby
         const owner = new CoupPlayer(socket.id, ownerName, true);
-        const room = new Room(roomName, owner);
-        lobby.addRoom(room);
+        const room = lobby.addRoom(roomName, owner);
 
         // Notify lobby and creator of new room
         io.to('gameLobby').emit('rooms', lobby.getAllPublic());

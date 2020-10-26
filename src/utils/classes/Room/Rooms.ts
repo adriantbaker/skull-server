@@ -1,14 +1,29 @@
+import generateID from '../../helpers/generateID';
 import Room, { RoomPublic } from './Room';
+import Trie from '../Trie/Trie';
+import CoupPlayer from '../Player/CoupPlayer';
 
 class Rooms {
     rooms: { [key: string]: Room }
+    roomIDs: Trie
 
     constructor() {
         this.rooms = {};
+        this.roomIDs = new Trie();
     }
 
-    addRoom(room: Room): void {
-        this.rooms[room.id] = room;
+    addRoom(roomName: string, owner: CoupPlayer): Room {
+        let roomID = generateID();
+        while (this.roomIDs.contains(roomID)) {
+            roomID = generateID();
+        }
+
+        const room = new Room(roomID, roomName, owner);
+
+        this.roomIDs.insert(roomID);
+        this.rooms[roomID] = room;
+
+        return room;
     }
 
     removeRoom(roomId: string): Room {

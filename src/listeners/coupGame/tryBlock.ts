@@ -33,10 +33,10 @@ const tryBlock = (io: Server, activeGames: CoupGames) => (request: tryBlockReque
 
     if (blockReceived && game.currentAction && game.currentBlock) {
         // Set time limit for players to respond to action
-        setTimeout(
+        /** setTimeout(
             expireAction(io, game, game.currentBlock),
             COUNTER_ACTION_TIME_LIMIT,
-        );
+        ); */
 
         // Notify players that someone has blocked the action
         sendPlayerUpdateToAll(game, io);

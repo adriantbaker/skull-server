@@ -1,0 +1,18 @@
+export default [
+    'CH',
+    'CK',
+    'CU',
+    'DA',
+    'EX',
+    'FA',
+    'FU',
+    'IT',
+    'KI',
+    'KK',
+    'KU',
+    'KY',
+    'MN',
+    'NT',
+    'PU',
+    'SH',
+];

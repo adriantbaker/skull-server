@@ -14,8 +14,8 @@ class Room {
     players: CoupPlayers
     maxPlayers: number
 
-    constructor(name: string, owner: CoupPlayer) {
-        this.id = owner.id + name + Date.now();
+    constructor(id: string, name: string, owner: CoupPlayer) {
+        this.id = id;
         this.name = name;
         this.players = new CoupPlayers([owner]);
         this.maxPlayers = 5;
