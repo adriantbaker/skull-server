@@ -23,6 +23,7 @@ export interface AttemptOutcome {
 }
 
 export interface Turn {
+    id: number
     number: number
     playerId: string
     playerName: string
@@ -76,6 +77,7 @@ class CoupGame {
         this.numPlayers = players.getNumPlayers();
         this.started = false;
         this.currentTurn = {
+            id: -1,
             number: -1,
             playerId: '',
             playerName: '',
@@ -144,6 +146,7 @@ class CoupGame {
             const [winnerId] = activePlayerIds;
 
             this.currentTurn = {
+                id: this.currentTurn.id + 1,
                 number: -1,
                 playerId: '',
                 playerName: '',
@@ -166,6 +169,7 @@ class CoupGame {
         const nextTurnPlayerName = nextTurnPlayer.name;
 
         this.currentTurn = {
+            id: this.currentTurn.id + 1,
             number: nextTurnNumber,
             playerId: nextTurnPlayerId,
             playerName: nextTurnPlayerName,
@@ -358,7 +362,8 @@ class CoupGame {
         // Action is still active, we expire it
         const expiredAction = handleExpireAction(action);
         if (isBlock) {
-            this.currentBlock = expiredAction;
+            this.currentBlock = undefined;
+            this.pastBlocks.push(expiredAction);
         } else {
             this.currentAction = expiredAction;
         }
