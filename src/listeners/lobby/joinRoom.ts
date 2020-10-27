@@ -5,15 +5,16 @@ import Rooms from '../../utils/classes/Room/Rooms';
 interface joinRoomRequest {
     roomId: string
     playerName: string
+    playerId: string
 }
 
 const joinRoom = (io: Server, socket: Socket, lobby: Rooms) => (
     (request: joinRoomRequest): void => {
-        const { roomId, playerName } = request;
+        const { roomId, playerName, playerId } = request;
 
         // Add user to room
         const room = lobby.getOne(roomId);
-        const player = new CoupPlayer(socket.id, playerName);
+        const player = new CoupPlayer(playerName, playerId);
         room.addPlayer(player);
 
         // Notify joiner of successful join

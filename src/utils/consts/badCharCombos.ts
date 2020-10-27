@@ -1,6 +1,8 @@
 export default [
+    'AG',
     'CH',
     'CK',
+    'CO',
     'CU',
     'DA',
     'EX',
@@ -9,10 +11,12 @@ export default [
     'IT',
     'KI',
     'KK',
+    'KO',
     'KU',
     'KY',
     'MN',
     'NT',
     'PU',
     'SH',
+    'XY',
 ];

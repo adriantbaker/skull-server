@@ -14,6 +14,9 @@ import tryBlock from './listeners/coupGame/tryBlock';
 import acceptAction from './listeners/coupGame/acceptAction';
 import discard from './listeners/coupGame/discard';
 import exchange from './listeners/coupGame/exchange';
+import getGameExists from './listeners/coupGame/getGameExists';
+import Users from './utils/classes/User/Users';
+import createUser from './listeners/users/createUser';
 
 // App setup
 const app = express();
@@ -27,9 +30,13 @@ const io = socketIo(server);
 // Data initialize
 const lobby = new Rooms();
 const activeGames = new Games();
+const users = new Users();
 
 io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
+
+    // Create user
+    socket.on('createUser', createUser(socket, users));
 
     // Join / leave lobby
     socket.on('joinLobby', joinLobby(socket, lobby));
@@ -43,6 +50,7 @@ io.on('connection', (socket) => {
     socket.on('startGame', startGame(io, lobby, activeGames));
 
     // Game interactions
+    socket.on('getGameExists', getGameExists(socket, lobby, activeGames));
     socket.on('getGameSetup', getFirstHands(socket, activeGames));
     socket.on('tryAction', tryAction(io, activeGames));
     socket.on('challengeAction', challengeAction(io, activeGames));

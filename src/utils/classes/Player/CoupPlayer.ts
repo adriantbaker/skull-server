@@ -24,7 +24,6 @@ export interface CoupPlayerPublic {
 
 class CoupPlayer {
     id: string
-    socketId: string
     name: string
     isOwner: boolean
     turnNumber: number
@@ -33,11 +32,10 @@ class CoupPlayer {
     exchangeCards: Hand
     numCoins: number
 
-    constructor(socketId: string, name: string, isOwner = false) {
-        this.socketId = socketId;
+    constructor(name: string, id: string, isOwner = false) {
         this.name = name;
         this.isOwner = isOwner;
-        this.id = name + Date.now();
+        this.id = id;
         this.turnNumber = -1;
         this.numCoins = 2;
         this.cards = [];

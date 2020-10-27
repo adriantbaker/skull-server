@@ -1,4 +1,4 @@
-import generateID from '../../helpers/generateID';
+import generateShortId from '../../helpers/generateShortId';
 import Room, { RoomPublic } from './Room';
 import CoupPlayer from '../Player/CoupPlayer';
 
@@ -10,10 +10,10 @@ class Rooms {
     }
 
     addRoom(roomName: string, owner: CoupPlayer): Room {
-        let roomID = generateID();
+        let roomID = generateShortId();
         while (this.rooms[roomID]) {
             // Room ID already in use
-            roomID = generateID();
+            roomID = generateShortId();
         }
 
         const room = new Room(roomID, roomName, owner);
