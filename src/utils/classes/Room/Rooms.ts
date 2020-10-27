@@ -1,6 +1,5 @@
 import generateID from '../../helpers/generateID';
 import Room, { RoomPublic } from './Room';
-import Trie from '../Trie/Trie';
 import CoupPlayer from '../Player/CoupPlayer';
 
 class Rooms {
