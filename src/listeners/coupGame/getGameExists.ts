@@ -1,7 +1,6 @@
 import { Socket } from 'socket.io';
 import CoupGames from '../../utils/classes/Game/CoupGames';
 import Rooms from '../../utils/classes/Room/Rooms';
-import findPlayerInGameOrRoom from './helpers/findPlayerInGameOrRoom';
 
 interface GetGameExistsRequest {
     gameId: string
@@ -42,7 +41,8 @@ const getGameExists = (socket: Socket, lobby: Rooms, activeGames: CoupGames) => 
         response.exists = true;
         response.name = game ? game.name : room.name;
 
-        const player = findPlayerInGameOrRoom(playerId, game || room);
+        const players = game ? game.players : room.players;
+        const player = players.getOne(playerId);
 
         if (player === undefined) {
             sendResponse(socket, response);

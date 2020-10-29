@@ -1,5 +1,6 @@
 export default [
     'AG',
+    'AZ',
     'CH',
     'CK',
     'CO',
