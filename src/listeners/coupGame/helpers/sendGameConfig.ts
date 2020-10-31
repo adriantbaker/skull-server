@@ -1,15 +1,17 @@
 import { Server, Socket } from 'socket.io';
-import CoupGame from '../../../utils/classes/Game/CoupGame/CoupGame';
+import CoupGame, { Turn } from '../../../utils/classes/Game/CoupGame/CoupGame';
 
 export interface GameConfig {
     actionTimeLimit: number
     respondTimeLimit: number
+    previousTurns: Array<Turn>
 }
 
 const getGameConfig = (game: CoupGame): GameConfig => {
     const gameConfig: GameConfig = {
         actionTimeLimit: 45,
         respondTimeLimit: 30,
+        previousTurns: game.previousTurns,
     };
     return gameConfig;
 };

@@ -32,24 +32,29 @@ const tryAction = (io: Server, activeGames: CoupGames) => (request: tryActionReq
     } = request;
     const game = activeGames.getOne(gameId);
 
-    const { received, implemented } = game.attempt(actionType, playerId, claimedCard, targetId);
+    const { validRequest, turnAdvanced } = game.attempt(
+        actionType,
+        playerId,
+        claimedCard,
+        targetId,
+    );
 
-    if (received) {
+    if (validRequest) {
         // Notify players that current player attempted an action
 
-        if (implemented) {
+        if (turnAdvanced) {
             // The action was immediately implemented (income)
-            sendGameUpdateToAll(game, io);
+            sendGameUpdateToAll(game, io, true);
             sendPlayerUpdateToAll(game, io);
         } else {
             // The action is not yet implemented, so no player update is needed
 
-            if (!game.currentAction) {
+            if (!game.currentTurn.action) {
                 console.log('Something went wrong');
                 return;
             }
 
-            const { canChallenge, canBlock } = game.currentAction;
+            const { canChallenge, canBlock } = game.currentTurn.action;
 
             if (canChallenge || canBlock) {
                 // Set a time limit for people to challenge / block action

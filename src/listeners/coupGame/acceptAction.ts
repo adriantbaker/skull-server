@@ -20,11 +20,11 @@ const acceptAction = (io: Server, activeGames: CoupGames) => (
 
         const game = activeGames.getOne(gameId);
 
-        const acceptReceived = game.accept(actionId, isBlock, playerId);
+        const { validRequest, turnAdvanced } = game.accept(actionId, isBlock, playerId);
 
-        if (acceptReceived) {
+        if (validRequest) {
             // Notify players that someone accepted the attempted action
-            sendGameUpdateToAll(game, io);
+            sendGameUpdateToAll(game, io, turnAdvanced);
             sendPlayerUpdateToAll(game, io);
         }
 

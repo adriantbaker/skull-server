@@ -19,11 +19,11 @@ const challengeAction = (io: Server, activeGames: CoupGames) => (
         } = request;
         const game = activeGames.getOne(gameId);
 
-        const challengeOutcome = game.challenge(actionId, isBlock, playerId);
+        const { validRequest, turnAdvanced } = game.challenge(actionId, isBlock, playerId);
 
-        if (challengeOutcome) {
+        if (validRequest) {
             // Tell all players the result of the challenge
-            sendGameUpdateToAll(game, io);
+            sendGameUpdateToAll(game, io, turnAdvanced);
             sendPlayerUpdateToAll(game, io);
         }
 

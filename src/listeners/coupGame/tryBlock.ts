@@ -29,9 +29,9 @@ const tryBlock = (io: Server, activeGames: CoupGames) => (request: tryBlockReque
 
     const game = activeGames.getOne(gameId);
 
-    const blockReceived = game.block(actionId, playerId, actionType, claimedCard);
+    const { validRequest, turnAdvanced } = game.block(actionId, playerId, actionType, claimedCard);
 
-    if (blockReceived && game.currentAction && game.currentBlock) {
+    if (validRequest) { // && game.currentTurn.action && game.currentTurn.block
         // Set time limit for players to respond to action
         /** setTimeout(
             expireAction(io, game, game.currentBlock),
@@ -39,8 +39,8 @@ const tryBlock = (io: Server, activeGames: CoupGames) => (request: tryBlockReque
         ); */
 
         // Notify players that someone has blocked the action
+        sendGameUpdateToAll(game, io, turnAdvanced);
         sendPlayerUpdateToAll(game, io);
-        sendGameUpdateToAll(game, io);
     }
 };
 

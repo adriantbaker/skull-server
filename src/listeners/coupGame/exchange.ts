@@ -19,10 +19,10 @@ const exchange = (io: Server, activeGames: CoupGames) => (
 
         const game = activeGames.getOne(gameId);
 
-        const exchangeReceived = game.exchange(playerId, cardIds);
+        const { validRequest, turnAdvanced } = game.exchange(playerId, cardIds);
 
-        if (exchangeReceived) {
-            sendGameUpdateToAll(game, io);
+        if (validRequest) {
+            sendGameUpdateToAll(game, io, turnAdvanced);
             sendPlayerUpdateToAll(game, io);
         }
     }

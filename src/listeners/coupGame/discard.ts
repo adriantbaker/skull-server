@@ -13,16 +13,14 @@ const discard = (io: Server, activeGames: CoupGames) => (
     (request: discardRequest): void => {
         // TODO: validate request
 
-        const {
-            cardIds, playerId, gameId,
-        } = request;
+        const { cardIds, playerId, gameId } = request;
 
         const game = activeGames.getOne(gameId);
 
-        const discardReceived = game.discard(playerId, cardIds);
+        const { validRequest, turnAdvanced } = game.discard(playerId, cardIds);
 
-        if (discardReceived) {
-            sendGameUpdateToAll(game, io);
+        if (validRequest) {
+            sendGameUpdateToAll(game, io, turnAdvanced);
             sendPlayerUpdateToAll(game, io);
         }
     }
