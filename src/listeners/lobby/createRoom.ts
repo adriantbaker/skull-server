@@ -1,6 +1,6 @@
 import { Socket, Server } from 'socket.io';
+import { lobby } from '../..';
 import CoupPlayer from '../../utils/classes/Player/CoupPlayer';
-import Rooms from '../../utils/classes/Room/Rooms';
 
 interface createRoomRequest {
     roomName: string
@@ -8,7 +8,7 @@ interface createRoomRequest {
     ownerId: string
 }
 
-const createRoom = (io: Server, socket: Socket, lobby: Rooms) => (
+const createRoom = (io: Server, socket: Socket) => (
     (request: createRoomRequest): void => {
         const { roomName, ownerName, ownerId } = request;
         // Add room to lobby

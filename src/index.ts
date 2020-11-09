@@ -28,36 +28,36 @@ const server = app.listen(4000, () => {
 const io = socketIo(server);
 
 // Data initialize
-const lobby = new Rooms();
-const activeGames = new Games();
-const users = new Users();
+export const lobby = new Rooms();
+export const activeGames = new Games();
+export const users = new Users();
 
 io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
 
     // Create user
-    socket.on('createUser', createUser(socket, users));
+    socket.on('createUser', createUser(socket));
 
     // Join / leave lobby
-    socket.on('joinLobby', joinLobby(socket, lobby));
+    socket.on('joinLobby', joinLobby(socket));
     socket.on('leaveLobby', leaveLobby(socket));
 
     // Lobby room CRUD
-    socket.on('createGameRoom', createRoom(io, socket, lobby));
-    socket.on('joinGameRoom', joinRoom(io, socket, lobby));
+    socket.on('createGameRoom', createRoom(io, socket));
+    socket.on('joinGameRoom', joinRoom(io, socket));
 
     // Game start
-    socket.on('startGame', startGame(io, lobby, activeGames));
+    socket.on('startGame', startGame(io));
 
     // Game interactions
-    socket.on('getGameExists', getGameExists(socket, lobby, activeGames));
-    socket.on('getGameSetup', getFirstHands(socket, activeGames));
-    socket.on('tryAction', tryAction(io, activeGames));
-    socket.on('challengeAction', challengeAction(io, activeGames));
-    socket.on('acceptAction', acceptAction(io, activeGames));
-    socket.on('tryBlock', tryBlock(io, activeGames));
-    socket.on('discard', discard(io, activeGames));
-    socket.on('exchange', exchange(io, activeGames));
+    socket.on('getGameExists', getGameExists(socket));
+    socket.on('getGameSetup', getFirstHands(socket));
+    socket.on('tryAction', tryAction(io));
+    socket.on('challengeAction', challengeAction(io));
+    socket.on('acceptAction', acceptAction(io));
+    socket.on('tryBlock', tryBlock(io));
+    socket.on('discard', discard(io));
+    socket.on('exchange', exchange(io));
 
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);

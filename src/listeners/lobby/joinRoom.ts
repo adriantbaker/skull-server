@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
+import { lobby } from '../..';
 import CoupPlayer from '../../utils/classes/Player/CoupPlayer';
-import Rooms from '../../utils/classes/Room/Rooms';
 
 interface joinRoomRequest {
     roomId: string
@@ -8,7 +8,7 @@ interface joinRoomRequest {
     playerId: string
 }
 
-const joinRoom = (io: Server, socket: Socket, lobby: Rooms) => (
+const joinRoom = (io: Server, socket: Socket) => (
     (request: joinRoomRequest): void => {
         const { roomId, playerName, playerId } = request;
 

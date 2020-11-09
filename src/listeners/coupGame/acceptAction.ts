@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import CoupGames from '../../utils/classes/Game/CoupGames';
+import { activeGames } from '../..';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
 
@@ -10,7 +10,7 @@ interface acceptActionRequest {
     gameId: string
 }
 
-const acceptAction = (io: Server, activeGames: CoupGames) => (
+const acceptAction = (io: Server) => (
     (request: acceptActionRequest): void => {
         // TODO: validate request
 

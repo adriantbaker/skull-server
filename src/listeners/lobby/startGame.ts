@@ -1,13 +1,12 @@
 import { Server } from 'socket.io';
+import { activeGames, lobby } from '../..';
 import CoupGame from '../../utils/classes/Game/CoupGame/CoupGame';
-import CoupGames from '../../utils/classes/Game/CoupGames';
-import Rooms from '../../utils/classes/Room/Rooms';
 
 interface startRoomRequest {
     roomId: string
 }
 
-const startGame = (io: Server, lobby: Rooms, activeGames: CoupGames) => (
+const startGame = (io: Server) => (
     (request: startRoomRequest): void => {
         const { roomId } = request;
 

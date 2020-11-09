@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import CoupGames from '../../utils/classes/Game/CoupGames';
+import { activeGames } from '../..';
 import { sendGameConfigToOne } from './helpers/sendGameConfig';
 import { sendGameUpdateToOne } from './helpers/sendGameUpdate';
 import { sendPlayerUpdateBySocket } from './helpers/sendPlayerUpdate';
@@ -9,7 +9,7 @@ interface GetGameSetupRequest {
     playerId: string
 }
 
-const getGameSetup = (socket: Socket, activeGames: CoupGames) => (
+const getGameSetup = (socket: Socket) => (
     (request: GetGameSetupRequest): void => {
         const { gameId, playerId } = request;
         const game = activeGames.getOne(gameId);

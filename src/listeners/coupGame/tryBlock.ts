@@ -1,8 +1,6 @@
 import { Server } from 'socket.io';
+import { activeGames } from '../..';
 import { CardType } from '../../utils/classes/Card/CoupCard';
-import CoupGames from '../../utils/classes/Game/CoupGames';
-import { COUNTER_ACTION_TIME_LIMIT } from '../../utils/consts/timeLimits';
-import expireAction from './helpers/expireAction';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
 
@@ -20,7 +18,7 @@ interface tryBlockRequest {
     playerId: string
 }
 
-const tryBlock = (io: Server, activeGames: CoupGames) => (request: tryBlockRequest): void => {
+const tryBlock = (io: Server) => (request: tryBlockRequest): void => {
     // TODO: validate request
 
     const {

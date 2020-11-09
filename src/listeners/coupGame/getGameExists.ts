@@ -1,7 +1,6 @@
 import { Socket } from 'socket.io';
-import CoupGames from '../../utils/classes/Game/CoupGames';
+import { activeGames, lobby } from '../..';
 import { CoupPlayerPublic } from '../../utils/classes/Player/CoupPlayer';
-import Rooms from '../../utils/classes/Room/Rooms';
 
 interface GetGameExistsRequest {
     gameId: string
@@ -21,7 +20,7 @@ const sendResponse = (socket: Socket, response: GetGameExistsResponse): void => 
     socket.emit('getGameExistsResponse', response);
 };
 
-const getGameExists = (socket: Socket, lobby: Rooms, activeGames: CoupGames) => (
+const getGameExists = (socket: Socket) => (
     (request: GetGameExistsRequest): void => {
         const { gameId, playerId } = request;
         const room = lobby.getOne(gameId);

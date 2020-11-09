@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import CoupGames from '../../utils/classes/Game/CoupGames';
+import { activeGames } from '../..';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
 
@@ -9,7 +9,7 @@ interface discardRequest {
     gameId: string
 }
 
-const discard = (io: Server, activeGames: CoupGames) => (
+const discard = (io: Server) => (
     (request: discardRequest): void => {
         // TODO: validate request
 

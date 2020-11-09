@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
-import CoupGames from '../../utils/classes/Game/CoupGames';
+import { activeGames } from '../..';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
-import { sendPlayerUpdateByPrivateRoom, sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
+import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
 
 interface challengeActionRequest {
     actionId: string,
@@ -10,7 +10,7 @@ interface challengeActionRequest {
     gameId: string
 }
 
-const challengeAction = (io: Server, activeGames: CoupGames) => (
+const challengeAction = (io: Server) => (
     (request: challengeActionRequest): void => {
         // TODO: validate request
 

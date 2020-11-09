@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
-import Rooms from '../../utils/classes/Room/Rooms';
+import { lobby } from '../..';
 
-const joinLobby = (socket: Socket, lobby: Rooms) => (): void => {
+const joinLobby = (socket: Socket) => (): void => {
     socket.join('gameLobby');
     socket.emit('rooms', lobby.getAllPublic());
 };
