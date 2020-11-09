@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { lobby } from '../..';
 import CoupPlayer from '../../utils/classes/Player/CoupPlayer';
+import RoomMember from '../../utils/classes/RoomMember/RoomMember';
 
 interface joinRoomRequest {
     roomId: string
@@ -14,7 +15,7 @@ const joinRoom = (io: Server, socket: Socket) => (
 
         // Add user to room
         const room = lobby.getOne(roomId);
-        const player = new CoupPlayer(playerName, playerId);
+        const player = new RoomMember(playerId, playerName);
         room.addPlayer(player);
 
         // Notify joiner of successful join

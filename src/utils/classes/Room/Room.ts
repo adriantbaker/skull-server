@@ -1,32 +1,32 @@
-import CoupPlayer, { CoupPlayerPublic } from '../Player/CoupPlayer';
-import CoupPlayers from '../Player/CoupPlayers';
+import RoomMember from '../RoomMember/RoomMember';
+import RoomMembers from '../RoomMember/RoomMembers';
 
 export interface RoomPublic {
     id: string,
     name: string,
-    players: Array<CoupPlayerPublic>
+    players: Array<RoomMember>
     maxPlayers: number
 }
 
 class Room {
     id: string
     name: string
-    players: CoupPlayers
+    players: RoomMembers
     maxPlayers: number
 
-    constructor(id: string, name: string, owner: CoupPlayer) {
+    constructor(id: string, name: string, owner: RoomMember) {
         this.id = id;
         this.name = name;
-        this.players = new CoupPlayers([owner]);
+        this.players = new RoomMembers([owner]);
         this.maxPlayers = 5;
     }
 
-    addPlayer(player: CoupPlayer): void {
-        this.players.addPlayer(player);
+    addPlayer(player: RoomMember): void {
+        this.players.addMember(player);
     }
 
-    removePlayer(playerId: string): CoupPlayer {
-        return this.players.removePlayer(playerId) as CoupPlayer;
+    removePlayer(playerId: string): RoomMember {
+        return this.players.removeMember(playerId);
     }
 
     /** Getters */
@@ -35,7 +35,7 @@ class Room {
         return {
             id: this.id,
             name: this.name,
-            players: this.players.getAllPublic(),
+            players: this.players.getAll(),
             maxPlayers: this.maxPlayers,
         };
     }

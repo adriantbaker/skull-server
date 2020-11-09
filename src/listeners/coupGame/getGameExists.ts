@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { activeGames, lobby } from '../..';
-import { CoupPlayerPublic } from '../../utils/classes/Player/CoupPlayer';
+import RoomMember from '../../utils/classes/RoomMember/RoomMember';
 
 interface GetGameExistsRequest {
     gameId: string
@@ -12,7 +12,7 @@ interface GetGameExistsResponse {
     inGame: boolean
     ownGame: boolean
     started: boolean
-    players: Array<CoupPlayerPublic>
+    players: Array<RoomMember>
     name: string
 }
 
