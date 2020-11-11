@@ -20,6 +20,12 @@ class RoomMembers {
         return member;
     }
 
+    resetReadiness(): void {
+        Object.keys(this.members).forEach((memberId) => {
+            this.members[memberId].ready = false;
+        });
+    }
+
     /** Getters */
 
     getOne(memberId: string): RoomMember {

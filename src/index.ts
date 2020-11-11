@@ -1,6 +1,5 @@
 import express from 'express';
 import socketIo from 'socket.io';
-import Games from './utils/classes/Game/CoupGames';
 import createRoom from './listeners/lobby/createRoom';
 import joinRoom from './listeners/lobby/joinRoom';
 import startGame from './listeners/lobby/startGame';
@@ -17,6 +16,9 @@ import exchange from './listeners/coupGame/exchange';
 import getGameExists from './listeners/coupGame/getGameExists';
 import Users from './utils/classes/User/Users';
 import createUser from './listeners/users/createUser';
+import toggleReady from './listeners/lobby/toggleReady';
+import leaveRoom from './listeners/lobby/leaveRoom';
+import deleteRoom from './listeners/lobby/deleteRoom';
 
 // App setup
 const app = express();
@@ -29,7 +31,6 @@ const io = socketIo(server);
 
 // Data initialize
 export const lobby = new Rooms();
-export const activeGames = new Games();
 export const users = new Users();
 
 io.on('connection', (socket) => {
@@ -38,13 +39,16 @@ io.on('connection', (socket) => {
     // Create user
     socket.on('createUser', createUser(socket));
 
-    // Join / leave lobby
+    // Lobby interactions
     socket.on('joinLobby', joinLobby(socket));
     socket.on('leaveLobby', leaveLobby(socket));
+    socket.on('toggleReady', toggleReady(io));
 
     // Lobby room CRUD
     socket.on('createGameRoom', createRoom(io, socket));
     socket.on('joinGameRoom', joinRoom(io, socket));
+    socket.on('leaveGameRoom', leaveRoom(io, socket));
+    socket.on('deleteGameRoom', deleteRoom(io));
 
     // Game start
     socket.on('startGame', startGame(io));

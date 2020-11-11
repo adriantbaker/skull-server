@@ -17,6 +17,7 @@ export default [
     'KY',
     'MN',
     'NT',
+    'PI',
     'PU',
     'SH',
     'XY',

@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { activeGames } from '../..';
+import { lobby } from '../..';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
 
@@ -15,9 +15,23 @@ const discard = (io: Server) => (
 
         const { cardIds, playerId, gameId } = request;
 
-        const game = activeGames.getOne(gameId);
+        const room = lobby.getOne(gameId);
+        const { game } = room;
+
+        if (!game) {
+            console.log(`Tried to discard on non-existent Game ${gameId}`);
+            return;
+        }
 
         const { validRequest, turnAdvanced } = game.discard(playerId, cardIds);
+
+        if (turnAdvanced && game.won) {
+            // That ended the game - send everyone back to the waiting room
+            const { winnerId, winnerName } = game;
+            room.endGame();
+            io.to(room.id).emit('updateRoom', { players: room.players.getAllPublic() });
+            io.to(room.id).emit('endGame', { winnerId, winnerName });
+        }
 
         if (validRequest) {
             sendGameUpdateToAll(game, io, turnAdvanced);

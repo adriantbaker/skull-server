@@ -43,7 +43,9 @@ class Rooms {
     }
 
     getAllPublic(): Array<RoomPublic> {
-        return Object.values(this.rooms).map((room) => room.getPublic());
+        return Object.values(this.rooms)
+            .filter((room) => !room.gameIsActive)
+            .map((room) => room.getPublic());
     }
 
     getNumRooms(): number {

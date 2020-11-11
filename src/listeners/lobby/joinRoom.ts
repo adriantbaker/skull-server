@@ -1,6 +1,5 @@
 import { Server, Socket } from 'socket.io';
 import { lobby } from '../..';
-import CoupPlayer from '../../utils/classes/Player/CoupPlayer';
 import RoomMember from '../../utils/classes/RoomMember/RoomMember';
 
 interface joinRoomRequest {

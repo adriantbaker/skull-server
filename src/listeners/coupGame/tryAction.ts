@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { activeGames } from '../..';
+import { lobby } from '../..';
 import { CardType } from '../../utils/classes/Card/CoupCard';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
@@ -28,7 +28,13 @@ const tryAction = (io: Server) => (request: tryActionRequest): void => {
     const {
         actionType, playerId, claimedCard, gameId, targetId,
     } = request;
-    const game = activeGames.getOne(gameId);
+
+    const { game } = lobby.getOne(gameId);
+
+    if (!game) {
+        console.log(`Tried to perform action on non-existent Game ${gameId}`);
+        return;
+    }
 
     const { validRequest, turnAdvanced } = game.attempt(
         actionType,

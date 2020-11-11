@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { activeGames, lobby } from '../..';
+import { lobby } from '../..';
 import RoomMember from '../../utils/classes/RoomMember/RoomMember';
 
 interface GetGameExistsRequest {
@@ -24,7 +24,6 @@ const getGameExists = (socket: Socket) => (
     (request: GetGameExistsRequest): void => {
         const { gameId, playerId } = request;
         const room = lobby.getOne(gameId);
-        const game = activeGames.getOne(gameId);
 
         const response: GetGameExistsResponse = {
             exists: false,
@@ -35,16 +34,16 @@ const getGameExists = (socket: Socket) => (
             name: '',
         };
 
-        if (room === undefined && game === undefined) {
+        if (room === undefined) {
             sendResponse(socket, response);
             return;
         }
 
         response.exists = true;
-        response.name = game ? game.name : room.name;
-        response.started = !!game;
+        response.name = room.name;
+        response.started = room.gameIsActive;
 
-        const players = game ? game.players : room.players;
+        const { players } = room;
         const player = players.getOne(playerId);
 
         response.players = players.getAllPublic();

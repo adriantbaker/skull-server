@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { activeGames } from '../..';
+import { lobby } from '../..';
 import { CardType } from '../../utils/classes/Card/CoupCard';
 import { sendGameUpdateToAll } from './helpers/sendGameUpdate';
 import { sendPlayerUpdateToAll } from './helpers/sendPlayerUpdate';
@@ -25,7 +25,12 @@ const tryBlock = (io: Server) => (request: tryBlockRequest): void => {
         actionId, actionType, claimedCard, gameId, playerId,
     } = request;
 
-    const game = activeGames.getOne(gameId);
+    const { game } = lobby.getOne(gameId);
+
+    if (!game) {
+        console.log(`Tried to block action on non-existent Game ${gameId}`);
+        return;
+    }
 
     const { validRequest, turnAdvanced } = game.block(actionId, playerId, actionType, claimedCard);
 
