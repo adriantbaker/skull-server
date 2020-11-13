@@ -20,9 +20,11 @@ import toggleReady from './listeners/lobby/toggleReady';
 import leaveRoom from './listeners/lobby/leaveRoom';
 import deleteRoom from './listeners/lobby/deleteRoom';
 
+const PORT = process.env.PORT || 4000;
+
 // App setup
 const app = express();
-const server = app.listen(4000, () => {
+const server = app.listen(PORT, () => {
     console.log('Listening to requests on 4000');
 });
 
